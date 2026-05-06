@@ -1,0 +1,89 @@
+﻿
+<link href="/css/employee/empForm.css" rel="stylesheet" />
+
+<div class="form-wrapper">
+    <EditForm Model="Model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div class="msg">@Message</div>
+        }
+        <a href="/employee" class="btn-back">Back</a>
+        <h3>@Title</h3>
+
+        <div>
+            <label>Employee Name</label>
+            <InputText class="form-control" @bind-Value="Model.EmployeeName" />
+        </div>
+
+        <div>
+            <label>Date Birth</label>
+            <InputDate class="form-control" @bind-Value="Model.DateBirth" />
+        </div>
+
+        <div>
+            <label>Address</label>
+            <InputText class="form-control" @bind-Value="Model.Address" />
+        </div>
+
+        <div>
+            <label>Phone</label>
+            <InputText class="form-control" @bind-Value="Model.Phone" />
+        </div>
+
+        <div>
+            <label>Email</label>
+            <InputText class="form-control" @bind-Value="Model.Email" />
+        </div>
+
+        <div>
+            <label>Remark</label>
+            <InputText class="form-control" @bind-Value="Model.Remark" />
+        </div>
+
+        <div>
+            <label>Job</label>
+            <InputSelect class="form-control" @bind-Value="Model.JobId">
+                <option value="">-- Select Job --</option>
+                @foreach (var job in Jobs)
+                {
+                    <option value="@job.JobID">@job.JobName</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div>
+            <label>Role</label>
+            <InputSelect class="form-control" @bind-Value="Model.RoleId">
+                <option value="">-- Select Role --</option>
+                @foreach (var role in Roles)
+                {
+                    <option value="@role.RoleID">@role.RoleName</option>
+                }
+            </InputSelect>
+        </div>
+
+        <button class="btn" type="submit">
+            @ButtonText
+        </button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public Employee Model { get; set; } = new();
+    [Parameter] public string ButtonText { get; set; } = "Save";
+    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+
+    // List selection of choice
+    [Parameter] public List<Jobs> Jobs { get; set; } = new();
+    [Parameter] public List<Roles> Roles { get; set; } = new();
+
+    private async Task HandleSubmit()
+    {
+        await OnSubmit.InvokeAsync();
+    }
+}

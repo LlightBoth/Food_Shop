@@ -1,0 +1,36 @@
+﻿@page "/employee/create"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+
+<Form Model="@employee"
+	  Title="@title"
+	  Roles="@roles"
+	  Jobs="@jobs"
+	  Message="@message"
+	  ButtonText="Create" 
+	  OnSubmit="CreateEmployee" />
+
+
+@code {
+	private Employee employee = new();
+	private List<Jobs> jobs = new();
+	private List<Roles> roles = new();
+	private string message = "";
+	private string title = "Create Employee";
+
+	async Task CreateEmployee()
+	{
+		db.Employees.Add(employee);
+		await db.SaveChangesAsync();
+
+		message = "Created new employee";
+		employee = new();
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		jobs = await db.Jobs.ToListAsync();
+		roles = await db.Roles.ToListAsync();
+	}
+}

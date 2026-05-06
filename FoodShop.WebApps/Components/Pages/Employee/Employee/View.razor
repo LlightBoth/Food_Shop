@@ -1,0 +1,199 @@
+﻿@page "/employee/{id:int}"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+@inject NavigationManager NavManager
+
+@using Microsoft.EntityFrameworkCore
+@using FoodShop.Data
+
+<div class="employee-view-fullscreen">
+    @if (employee == null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <div class="employee-profile-card">
+            <div class="profile-actions">
+                <button @onclick="GoBack" class="back-button">Back</button>
+            </div>
+            <div class="profile-header">
+                <div class="info-item">
+                    <strong>Fullname:</strong>
+                    <h2>@employee.EmployeeName</h2>
+                </div>
+                <div>
+                    <div class="info-item"><strong>Role:</strong></div>
+                    <span class="role-badge">@employee.Role?.RoleName</span>
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <div class="info-item"><strong>Email:</strong> @employee.Email</div>
+                <div class="info-item"><strong>Phone:</strong> @employee.Phone</div>
+                <div class="info-item"><strong>Address:</strong> @employee.Address</div>
+                <div class="info-item"><strong>Date of Birth:</strong> @employee.DateBirth?.ToString("yyyy-MM-dd")</div>
+                <div class="info-item"><strong>Job:</strong> @employee.Job?.JobName</div>
+                <div class="info-item"><strong>Remark:</strong> @employee.Remark</div>
+                <div class="info-item"><strong>Created At:</strong> @employee.CreatedAt?.ToString("yyyy-MM-dd")</div>
+            </div>
+
+        </div>
+    }
+</div>
+
+<style>
+/* Modern Root Variables - adjust colors to your theme */
+:root {
+    --primary-color: #4f46e5;
+    --secondary-color: #64748b;
+    --card-bg: #ffffff;
+    --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border-radius: 12px;
+    --transition-speed: 0.3s;
+}
+
+.employee-view-fullscreen {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+/* Card Styling */
+.employee-profile-card {
+    width: 100%;
+    max-width: 900px;
+    height: fit-content;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden; /* Ensures header doesn't spill out */
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.4s ease-out;
+}
+
+/* keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+} */
+
+/* Header Redesign */
+.profile-header {
+    background: #ffffff;
+    padding: 2.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-header h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.025em;
+}
+
+.role-badge {
+    background-color: #e0e7ff; /* Soft blue */
+    color: var(--primary-color);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Info Grid Section */
+.profile-info {
+    padding: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-item strong {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+/* Styled text for info */
+.info-item span, .info-item {
+    font-size: 1rem;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+/* Actions */
+.profile-actions {
+    padding: 1.5rem 2.5rem;
+    background-color: #f8fafc;
+    display: flex;
+    justify-content: flex-start; /* Align back button to left */
+}
+
+.back-button {
+    padding: 0.6rem 1.2rem;
+    background-color: #fff;
+    color: var(--text-main);
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all var(--transition-speed);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.back-button:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+/* Mobile Tweak */
+/* media (max-width: 640px) {
+    .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .profile-info {
+        grid-template-columns: 1fr;
+    }
+} */
+</style>
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Employee? employee;
+
+    protected override async Task OnInitializedAsync()
+    {
+        employee = await db.Employees
+            .Include(e => e.Job)
+            .Include(e => e.Role)
+            .FirstOrDefaultAsync(e => e.EmployeeID == id);
+
+        if (employee == null)
+        {
+            NavManager.NavigateTo("/employee");
+        }
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("/employee");
+    }
+}

@@ -1,0 +1,222 @@
+﻿/* =========================================
+   LOGIN OVERLAY & POP-UP
+   ========================================= */
+
+/* The full-screen blurry backdrop */
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.45); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+/* Floating Toast Message at Top Left */
+.status-message {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 10001; /* Must be higher than the overlay (9999) */
+    background-color: var(--card-light, #ffffff);
+    color: #ff4d4d; /* Red for error */
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-left: 5px solid #ff4d4d;
+    animation: slideIn 0.3s ease-out;
+    max-width: 300px;
+}
+
+/* Success styling if needed */
+.status-message.success {
+    color: #2ecc71;
+    border-left-color: #2ecc71;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .status-message {
+    background-color: var(--card-dark, #252525);
+    color: #ff6e6e;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+/* The central card */
+.login-wrapper {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    max-width: 850px;
+    width: 100%;
+    min-height: 500px;
+    background-color: var(--card-light, #ffffff);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Image side */
+.login-img {
+    background: url('/image/grilled chicken.jpg') center center no-repeat;
+    background-size: cover;
+}
+
+/* Content side */
+.login-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px;
+    background-color: inherit; /* Syncs with wrapper background */
+}
+
+/* =========================================
+   TEXT & FORM ELEMENTS
+   ========================================= */
+
+.login-content h2 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-light, #333);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.login-content input {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    border: 1.5px solid var(--border-light, #e0e0e0);
+    border-radius: 12px;
+    background-color: var(--bg-light, #fdfdfd);
+    color: var(--text-light, #333);
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.login-content input:focus {
+    border-color: var(--primary-color, #FF6B35);
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.login-content a {
+    color: var(--secondary-color, #4da6ff);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.login-content a:hover {
+    text-decoration: underline;
+}
+
+/* Bottom spacing */
+.bottom-content {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.bottom-content p {
+    font-size: 0.95rem;
+    color: #666;
+}
+
+/* Primary Button */
+.login-content button[type="submit"] {
+    background-color: var(--primary-color, #FF6B35);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+}
+
+.login-content button[type="submit"]:hover {
+    background-color: #e55a2b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(255, 107, 53, 0.3);
+}
+
+/* Close Button Styling */
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #999;
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: var(--primary-color, #FF6B35);
+}
+
+/* =========================================
+   ANIMATIONS & THEMES
+   ========================================= */
+
+@keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] .login-wrapper {
+    background-color: var(--card-dark, #252525);
+    border: 1px solid #444;
+}
+
+[data-theme="dark"] .login-content h2,
+[data-theme="dark"] .bottom-content p {
+    color: var(--text-dark, #ffffff);
+}
+
+[data-theme="dark"] .login-content input {
+    background-color: #1a1a1a;
+    border-color: #444;
+    color: #fff;
+}
+
+/* =========================================
+   MOBILE FIX
+   ========================================= */
+@media (max-width: 768px) {
+    .login-wrapper {
+        grid-template-columns: 1fr;
+        max-height: 95vh;
+        width: 95%;
+        overflow-y: auto;
+    }
+    .login-img {
+        height: 180px;
+    }
+    .login-content {
+        padding: 32px 24px;
+    }
+}

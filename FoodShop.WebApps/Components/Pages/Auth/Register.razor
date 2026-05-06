@@ -1,0 +1,144 @@
+﻿@page "/register"
+
+@inject FoodShopDbContext db
+@inject NavigationManager NavManager
+
+
+<PageTitle>Register</PageTitle>
+
+<link href="/css/auth/register.css" rel="stylesheet" />
+
+
+@if (isVisible)
+{
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        /* Determine if it's success or error for styling */
+        var statusClass = Message.Contains("successfully") ? "success" : "";
+        <div class="status-message @statusClass">
+            @Message
+        </div>
+    }
+
+    <div class="register-overlay" @onclick="ClosePopup">
+        <div class="register-wrapper" @onclick:stopPropagation="true">
+            <aside class="register-img"></aside>
+            <aside class="register-content">
+                <EditForm Model="@customer" OnValidSubmit="CreateNewUser">
+                    <section class="top-content">
+                        <h2>Fullname</h2>
+                        <input type="text" placeholder="Enter your name" @bind='@Fullname' />
+                        <h2>Phone</h2>
+                        <input type="text" placeholder="Enter your phone" @bind='@Phone' />
+                        <h2>Date/Birth</h2>
+                        <input type="date" @bind='@DateBirth' />
+                        <h2>Address</h2>
+                        <input type="text" placeholder="Enter your address" @bind='@Address' />
+                        <h2>Email</h2>
+                        <input type="email" placeholder="Enter your email" @bind='@Email' />
+                        <h2>Password</h2>
+                        <input type="password" placeholder="••••••••" @bind='@Password' />
+                        <h2>Confirm password</h2>
+                        <input type="password" placeholder="••••••••" @bind='@ConfirmPassword' />
+
+
+                    </section>
+
+                    <section class="bottom-content">
+                        <p>Already have an account? <a href="/login">Login</a></p>
+                        <button type="submit" class="login-btn">Register</button>
+                    </section>
+                </EditForm>
+            </aside>
+        </div>
+    </div>
+}
+
+
+@code {
+    private Customer customer = new();
+    private List<Customer> customers = new List<Customer>();
+
+    // User property
+    private string Fullname { get; set; }
+    private DateTime DateBirth { get; set; }
+    private string Address { get; set; }
+    private string Phone { get; set; }
+    private string Email { get; set; }
+    private string Password { get; set; }
+    private string ConfirmPassword { get; set; }
+
+    // CLick Background to close (visible)
+    private bool isVisible = true;
+    private string Message = "";
+
+    // Return All Users
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await db.Customers.ToListAsync();   
+    }
+
+
+    private async Task CreateNewUser()
+    {
+        if (!IsCheckPassword(ConfirmPassword, Password))
+        {
+            Message = "Passwords do not match.";
+            return;
+        }
+
+        if (IsEmailAlreadyExist(Email))
+        {
+            Message = "This email already exists.";
+            return;
+        }
+
+        if (IsNameAlreadyExist(Fullname))
+        {
+            Message = "This username already exists.";
+            return;
+        }
+
+        var newCustomer = new Customer
+        {
+            CustomerName = Fullname,
+            Phone = Phone,
+            DateBirth = DateBirth,
+            Address = Address,
+            Email = Email,
+            Password = Password
+        };
+
+        await db.Customers.AddAsync(newCustomer);
+        await db.SaveChangesAsync();
+        customer = new();
+        Message = "New user created successfully.";
+    }
+
+    // Helper Function
+    private bool IsEmailAlreadyExist(string inputEmail)
+    {
+        return customers.Any(c => c.Email == inputEmail);
+    }
+
+    private bool IsCheckPassword(string confirmPassword, string password)
+    {
+        return confirmPassword == password;
+    }
+
+    private bool IsNameAlreadyExist(string inputName)
+    {
+        return customers.Any(c => c.CustomerName == inputName);
+    }
+
+    public void ClosePopup()
+    {
+        isVisible = false;
+        NavManager.NavigateTo("/login");
+    }
+    public void ShowPopup()
+    {
+        isVisible = true;
+    }
+
+}

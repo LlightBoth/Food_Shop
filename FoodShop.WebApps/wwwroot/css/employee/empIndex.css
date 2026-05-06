@@ -1,0 +1,163 @@
+﻿/* Header Section */
+.category-header, .cust-header, .employee-header, 
+.food-header, .invoice-header, .job-header, 
+.page-header, .role-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+}
+
+.category-header h3, .cust-header h3, .employee-header h3,
+.food-header h3, .invoice-header h3, .job-header h3, 
+.page-header h3, .role-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: inherit;
+}
+
+/* "Create New" Button */
+.category-create, .cust-create, .employee-create,
+.food-create, .invoice-create, .job-create, 
+.page-create, .role-create {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, filter var(--transition-speed);
+}
+
+.category-create:hover, .cust-create:hover, .employee-create:hover,
+.food-create:hover, .invoice-create:hover, .job-create:hover, 
+.page-create:hover, .role-create:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+/* Table Wrapper */
+.category-wrapper, .customer-wrapper, .employee-wrapper,
+.food-wrapper, .invoice-wrapper, .job-wrapper, 
+.page-wrapper, .role-wrapper {
+    background-color: var(--card-light);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-light);
+    overflow: hidden; 
+    transition: background-color var(--transition-speed);
+}
+
+[data-theme="dark"] .category-wrapper, 
+[data-theme="dark"] .customer-wrapper, 
+[data-theme="dark"] .employee-wrapper,
+[data-theme="dark"] .food-wrapper,
+[data-theme="dark"] .invoice-wrapper,
+[data-theme="dark"] .job-wrapper,
+[data-theme="dark"] .page-wrapper,
+[data-theme="dark"] .role-wrapper {
+    background-color: var(--card-dark);
+    border-color: #444;
+}
+
+/* Table Styling */
+.category-table, .customer-table, .employee-table,
+.food-table, .invoice-table, .job-table, 
+.page-table, .role-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.category-table th, .customer-table th, .employee-table th,
+.food-table th, .invoice-table th, .job-table th, 
+.page-table th, .role-table th {
+    background-color: rgba(0, 0, 0, 0.03);
+    padding: 1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--border-light);
+}
+
+[data-theme="dark"] .category-table th, 
+[data-theme="dark"] .customer-table th, 
+[data-theme="dark"] .employee-table th,
+[data-theme="dark"] .food-table th,
+[data-theme="dark"] .invoice-table th,
+[data-theme="dark"] .job-table th,
+[data-theme="dark"] .page-table th,
+[data-theme="dark"] .role-table th {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom-color: #555;
+}
+
+.category-table td, .customer-table td, .employee-table td,
+.food-table td, .invoice-table td, .job-table td, 
+.page-table td, .role-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+[data-theme="dark"] .category-table td, 
+[data-theme="dark"] .customer-table td, 
+[data-theme="dark"] .employee-table td,
+[data-theme="dark"] .food-table td,
+[data-theme="dark"] .invoice-table td,
+[data-theme="dark"] .job-table td,
+[data-theme="dark"] .page-table td,
+[data-theme="dark"] .role-table td {
+    border-bottom-color: #444;
+}
+
+/* Row Hover Effect */
+.category-table tbody tr:hover, .customer-table tbody tr:hover, .employee-table tbody tr:hover,
+.food-table tbody tr:hover, .invoice-table tbody tr:hover, .job-table tbody tr:hover, 
+.page-table tbody tr:hover, .role-table tbody tr:hover {
+    background-color: rgba(77, 166, 255, 0.05); 
+}
+
+/* Action Buttons within Table */
+.category-table button, .customer-table button, .employee-table button,
+.food-table button, .invoice-table button, .job-table button, 
+.page-table button, .role-table button {
+    padding: 0.4rem 0.8rem;
+    margin-right: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+/* View Button - Secondary Color */
+.category-table button:first-child, .customer-table button:first-child, 
+.employee-table button:first-child, .food-table button:first-child,
+.invoice-table button:first-child, .job-table button:first-child,
+.page-table button:first-child, .role-table button:first-child {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* Delete Button - Red Outline */
+.category-table button:last-child, .customer-table button:last-child, 
+.employee-table button:last-child, .food-table button:last-child,
+.invoice-table button:last-child, .job-table button:last-child,
+.page-table button:last-child, .role-table button:last-child {
+    background-color: transparent;
+    color: #ff4d4d;
+    border-color: #ff4d4d;
+}
+
+.category-table button:last-child:hover, .customer-table button:last-child:hover, 
+.employee-table button:last-child:hover, .food-table button:last-child:hover,
+.invoice-table button:last-child:hover, .job-table button:last-child:hover,
+.page-table button:last-child:hover, .role-table button:last-child:hover {
+    background-color: #ff4d4d;
+    color: white;
+}

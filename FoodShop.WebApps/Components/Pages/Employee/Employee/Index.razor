@@ -1,0 +1,93 @@
+﻿@page "/employee"
+@inherits FoodShop.WebApps.Middleware.CheckRoleBase
+
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@using Microsoft.EntityFrameworkCore ;
+@using FoodShop.Data;
+
+
+@inject FoodShopDbContext db
+@inject NavigationManager NavManager
+
+
+
+<link href="/css/employee/empIndex.css" rel="stylesheet" />
+
+<PageTitle>Employees</PageTitle>
+
+<div class="employee-header">
+	<h3>Employees</h3>
+	<a href="/employee/create" class="employee-create">Create new</a>
+</div>
+
+<div class="employee-wrapper">
+	<table class="employee-table">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Email</th>
+				<th>Job</th>
+				<th>Created At</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var e in employees)
+			{
+				<tr>
+					<td>@e.EmployeeID</td>
+					<td>
+						<a href="@($"/employee/{e.EmployeeID}")">@e.EmployeeName</a>
+					</td>
+					<td>@e.Email</td>
+					<td>@e.Job?.JobName</td>
+					<td>@e.CreatedAt?.ToString("yyyy-MM-dd")</td>
+					<td>
+						<button @onclick="() => ViewEmployee(e.EmployeeID)">Edit</button>
+						<button @onclick="() => DeleteEmployee(e.EmployeeID)">Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+
+@code {
+	private List<Employee> employees = new();
+
+	private bool _dataLoaded = false;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await base.OnAfterRenderAsync(firstRender);
+
+		if (!IsAuthorize || _dataLoaded) return;
+
+		_dataLoaded = true;
+
+		employees = await db.Employees.Include(j => j.Job).ToListAsync();
+
+		StateHasChanged();
+	}
+
+	private async Task DeleteEmployee(int id)
+	{
+		var employee = await db.Employees.FindAsync(id);
+
+		if (employee != null)
+		{
+			db.Employees.Remove(employee);
+			await db.SaveChangesAsync();
+
+			employees.Remove(employee);
+		}
+	}
+
+	private void ViewEmployee(int id)
+	{
+		NavManager.NavigateTo($"/employee/edit/{id}");
+	}
+}

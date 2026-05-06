@@ -1,0 +1,39 @@
+﻿@page "/category/edit/{id:int}"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@using Microsoft.EntityFrameworkCore
+@inject FoodShopDbContext db
+
+<Form Model="@category" 
+	  Message="@message"
+	  Title="@title"
+	  ButtonText="Update" 
+	  OnSubmit="EditCategory" />
+
+
+@code {
+	[Parameter] public int id { get; set; }
+
+	private Food_Categories category = new();
+	private string message = "";
+	private string title = "Edit Category";
+
+	async Task EditCategory()
+	{
+		db.FoodCategories.Update(category);
+		await db.SaveChangesAsync();
+
+		message = "Updated Successfully";
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		category = await db.FoodCategories.FirstOrDefaultAsync(x => x.CategoryID == id);
+
+		if (category == null)
+		{
+			message = "Category not found";
+			return;
+		}
+	}
+}

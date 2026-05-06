@@ -1,0 +1,16 @@
+﻿@page "/{foodCategory}/{foodID:int}"
+
+<PageTitle>Food-Detail</PageTitle>
+<link href="/css/client/foodDetail.css" rel="stylesheet" />
+
+<h3>Food Detail</h3>
+<p>Category: @foodCategory</p>
+<p>Food ID: @foodID</p>
+
+@code {
+    [Parameter]
+    public int foodID { get; set; }
+
+    [Parameter]
+    public string foodCategory { get; set; }
+}

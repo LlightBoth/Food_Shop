@@ -1,0 +1,46 @@
+﻿@page "/employee/edit/{id:int}"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@using Microsoft.EntityFrameworkCore
+@inject FoodShopDbContext db
+
+<Form Model="@employee"
+	  Title="@title"
+	  Roles="@roles"
+	  Jobs="@jobs"
+	  Message="@message"
+	  ButtonText="Update"
+	  OnSubmit="EditEmployee" />
+
+
+@code {
+	[Parameter] public int id { get; set; }
+
+	private Employee employee = new();
+	private List<Roles> roles = new();
+	private List<Jobs> jobs = new();
+
+	private string message = "";
+	private string title = "Edit Employee";
+
+	async Task EditEmployee()
+	{
+		db.Employees.Update(employee);
+		await db.SaveChangesAsync();
+
+		message = "Updated Successfully";
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		employee = await db.Employees.FirstOrDefaultAsync(e => e.EmployeeID == id);
+		roles = await db.Roles.ToListAsync();
+		jobs = await db.Jobs.ToListAsync();
+
+		if (employee == null)
+		{
+			message = "Employee not found";
+			return;
+		}
+	}
+}

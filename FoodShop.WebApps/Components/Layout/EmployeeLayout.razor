@@ -1,0 +1,76 @@
+﻿@inherits LayoutComponentBase
+
+@using FoodShop.WebApps.Services
+
+@inject IJSRuntime JS
+@inject CurrentUser CurrentUser
+
+<link href="/css/employee/empLayout.css" rel="stylesheet" />
+<link href="/css/layout/app.css" rel="stylesheet" />
+
+
+<div class="emp-container" data-theme="@mode">
+
+    <header class="emp-header">
+        <a href="/emp"> @username </a>
+        <a href="/logout">Log-out</a>
+    </header>
+
+    <aside class="emp-aside">
+        <nav class="emp-nav">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/category">Category</a>
+            <a href="/food">Food</a>
+            <a href="/customer">Customer</a>
+            <a href="/employee">Employee</a>
+            <a href="/job">Job</a>
+            <a href="/role">Role</a>
+            <a href="/page">Page</a>
+            <a href="/">Food-Shop</a>
+        </nav>
+    </aside>
+
+    <section class="emp-main">
+        <main class="emp-content">
+            @Body
+        </main>
+    </section>
+
+    <footer class="emp-footer">
+        <p>&copy; 2026 Employee site - All Rights Reserved</p>
+    </footer>
+
+
+    <div class="theme-selector">
+        <button class="theme-btn @(mode == "light" ? "active" : "")" @onclick='() => ToggleTheme("light")'>
+            <i>☀️</i>
+        </button>
+        <button class="theme-btn @(mode == "dark" ? "active" : "")" @onclick='() => ToggleTheme("dark")'>
+            <i>🌙</i>
+        </button>
+    </div>
+</div>
+
+@code {
+    private string username = "Emp";
+    private string mode = "light";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        var session = await CurrentUser.GetUserUsernameAsync();
+
+        if (session != null)
+        {
+            username = session;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleTheme(string newMode)
+    {
+        mode = newMode;
+        await JS.InvokeVoidAsync("setTheme", mode);
+    }
+}

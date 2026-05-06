@@ -1,0 +1,72 @@
+﻿@page "/job"
+@inherits FoodShop.WebApps.Middleware.CheckRoleBase
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+@inject NavigationManager NavManager
+
+@using Microsoft.EntityFrameworkCore
+@using FoodShop.Data
+
+<link href="/css/employee/empIndex.css" rel="stylesheet" />
+
+<PageTitle>Jobs</PageTitle>
+
+<div class="job-header">
+	<h3>Jobs</h3>
+	<a href="/job/create" class="job-create">Create new</a>
+</div>
+
+<div class="job-wrapper">
+	<table class="job-table">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Description</th>
+				<th>CreatedAt</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var j in jobs)
+			{
+				<tr>
+					<td>@j.JobID</td>
+					<td>@j.JobName</td>
+					<td>@j.Description</td>
+					<td>@j.CreatedAt</td>
+					<td>
+						<button @onclick="() => ViewJob(j.JobID)">Edit</button>
+						<button @onclick="() => DeleteJob(j.JobID)">Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@code {
+	private List<Jobs> jobs = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		jobs = await db.Jobs.ToListAsync();
+	}
+
+	private async Task DeleteJob(int id)
+	{
+		var job = await db.Jobs.FindAsync(id);
+		if (jobs != null)
+		{
+			db.Jobs.Remove(job);
+			await db.SaveChangesAsync();
+			jobs.Remove(job);
+		}
+	}
+
+	private async Task ViewJob(int id)
+	{
+		NavManager.NavigateTo($"/job/edit/{id}");
+	}
+}

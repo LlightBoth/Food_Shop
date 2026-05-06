@@ -1,0 +1,174 @@
+﻿/* Layout Wrapper */
+.menu-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 20px;
+    background-color: var(--current-bg);
+    color: var(--current-text);
+    min-height: 100vh;
+    transition: background-color var(--transition-speed);
+}
+
+/* Hero Section */
+.menu-header-img {
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+        url('/image/chicken.jpg') center/cover no-repeat;
+    width: 100%;
+    height: 240px;
+    border-radius: calc(var(--border-radius) * 2);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Filter Bar */
+.menu-category {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5px;
+}
+
+.menu-category p {
+    font-weight: 600;
+    margin: 0;
+}
+
+.category-select {
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--current-border);
+    background-color: var(--current-card);
+    color: var(--current-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border var(--transition-speed);
+}
+
+.category-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Food Grid */
+.menu-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Modern Food Card */
+.food-card {
+    background: var(--current-card);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--current-border);
+    overflow: hidden;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.food-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.food-image-wrapper {
+    width: 100%;
+    height: 180px;
+    background-color: #eee;
+}
+
+.food-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Card Content */
+.food-info {
+    padding: 14px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.food-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.food-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.rating-badge {
+    background: rgba(255, 107, 53, 0.1); /* Low opacity version of primary */
+    color: var(--primary-color);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.category-text {
+    font-size: 0.85rem;
+    color: var(--current-text);
+    opacity: 0.6;
+    margin: 0;
+}
+
+/* Footer & Button */
+.food-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.amount {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.add-btn-v2 {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: filter 0.2s;
+}
+
+.add-btn-v2:hover {
+    filter: brightness(1.2);
+}
+
+.add-btn-v2:active { 
+    color: lightgray;
+    background-color: lightgreen;
+    transition: 0.3s;
+}
+
+
+.add-btn-v2 .icon {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.add-btn-v2 span {
+    cursor: pointer;
+}

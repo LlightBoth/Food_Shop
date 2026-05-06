@@ -1,0 +1,66 @@
+﻿<link href="/css/employee/empForm.css" rel="stylesheet" />
+
+<div class="form-wrapper">
+    <EditForm Model="Model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div class="msg">@Message</div>
+        }
+        <a href="/invoice" class="btn-back">Back</a>
+        <h3>@Title</h3>
+
+        <div>
+            <label>Customer</label>
+            <InputSelect class="form-control" @bind-Value="Model.CustomerID">
+                <option value="">-- Select Customer --</option>
+                @foreach(var c in customers)
+                {
+                    <option value="@c.CustomerID">@c.CustomerName</option>   
+                }
+            </InputSelect>
+        </div>
+
+        <div>
+            <label>Seller</label>
+            <InputSelect class="form-control" @bind-Value="Model.SellerID">
+                <option value="">-- Select Seller --</option>
+                @foreach (var s in sellers)
+                {
+                    <option value="@s.EmployeeID">@s.EmployeeName</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div>
+            <label>Total</label>
+            <InputNumber class="form-control" @bind-Value="Model.TotalAmount" />
+        </div>
+
+
+        <button class="btn" type="submit">
+            @ButtonText
+        </button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public Invoices Model { get; set; } = new();
+    [Parameter] public string ButtonText { get; set; } = "Save";
+    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+
+    // List Dropdown choosage
+    [Parameter] public List<Customer> customers { get; set; } = new();
+    [Parameter] public List<Employee> sellers { get; set; } = new();
+
+
+
+    private async Task HandleSubmit()
+    {
+        await OnSubmit.InvokeAsync();
+    }
+}

@@ -1,0 +1,73 @@
+﻿@page "/page"
+@inherits FoodShop.WebApps.Middleware.CheckRoleBase
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+@inject NavigationManager NavManager
+
+@using Microsoft.EntityFrameworkCore
+@using FoodShop.Data
+
+<link href="/css/employee/empIndex.css" rel="stylesheet" />
+
+
+<PageTitle>Pages</PageTitle>
+
+<div class="page-header">
+	<h3>Pages</h3>
+	<a href="/page/create" class="page-create">Create new</a>
+</div>
+
+<div class="page-wrapper">
+	<table class="page-table">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Description</th>
+				<th>CreatedAt</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var p in pages)
+			{
+				<tr>
+					<td>@p.PageID</td>
+					<td>@p.PageName</td>
+					<td>@p.Descriptions</td>
+					<td>@p.CreatedAt</td>
+					<td>
+						<button @onclick="() => ViewPage(p.PageID)">Edit</button>
+						<button @onclick="() => DeletePage(p.PageID)">Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@code {
+	private List<Pages> pages = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		pages = await db.Pages.ToListAsync();
+	}
+
+	private async Task DeletePage(int id)
+	{
+		var page = await db.Pages.FindAsync(id);
+		if (pages != null)
+		{
+			db.Pages.Remove(page);
+			await db.SaveChangesAsync();
+			pages.Remove(page);
+		}
+	}
+
+	private async Task ViewPage(int id)
+	{
+		NavManager.NavigateTo($"/page/edit/{id}");
+	}
+}

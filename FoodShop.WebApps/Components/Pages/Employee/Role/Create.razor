@@ -1,0 +1,46 @@
+﻿@page "/role/create"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+
+<Form Model="@role"
+      Title="@title"
+      Message="@message"
+      Pages="@pages"
+      ButtonText="Create"
+      OnSubmit="@(selectedIds => CreateRole(selectedIds))" />
+
+@code {
+    private Roles role = new();
+    private List<Pages> pages = new();
+    private string title = "Create Role";
+    private string message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pages = await db.Pages.ToListAsync();
+    }
+
+    private async Task CreateRole(List<int> selectedPageIDs)
+    {
+        // 1️ Save Role first to generate RoleID
+        db.Roles.Add(role);
+        await db.SaveChangesAsync();
+
+        // 2️ Create Role_Permissions based on selected checkboxes
+        if (selectedPageIDs != null && selectedPageIDs.Any())
+        {
+            var permissions = selectedPageIDs.Select(pid => new Role_Permissions
+            {
+                RoleID = role.RoleID,
+                PageID = pid
+            }).ToList();
+
+            db.Role_Permissions.AddRange(permissions);
+            await db.SaveChangesAsync();
+        }
+        message = "Create Role Successfully";
+        // 3️ Reset form
+        role = new Roles();
+    }
+}

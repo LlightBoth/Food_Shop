@@ -1,0 +1,45 @@
+﻿<link href="/css/employee/empForm.css" rel="stylesheet" />
+
+<div class="form-wrapper">
+    <EditForm Model="Model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div class="msg">@Message</div>
+        }
+        <a href="/page" class="btn-back">Back</a>
+        <h3>@Title</h3>
+
+        <div>
+            <label>Page Name</label>
+            <InputText class="form-control" @bind-Value="Model.PageName" />
+        </div>
+
+        <div>
+            <label>Description</label>
+            <InputTextArea class="form-control" @bind-Value="Model.Descriptions" />
+        </div>
+
+
+        <button class="btn" type="submit">
+            @ButtonText
+        </button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public Pages Model { get; set; } = new();
+    [Parameter] public string ButtonText { get; set; } = "Save";
+    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+
+
+
+    private async Task HandleSubmit()
+    {
+        await OnSubmit.InvokeAsync();
+    }
+}

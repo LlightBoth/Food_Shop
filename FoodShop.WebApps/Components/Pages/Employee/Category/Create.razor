@@ -1,0 +1,26 @@
+﻿@page "/category/create"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+
+<Form Model="@category" 
+	  Title="@title"
+	  Message="@message"
+	  ButtonText="Create" 
+	  OnSubmit="CreateCategory" />
+
+
+@code {
+	private Food_Categories category = new();
+	private string message = "";
+	private string title = "Create Category";
+
+	async Task CreateCategory()
+	{
+		db.FoodCategories.Add(category);
+		await db.SaveChangesAsync();
+
+		message = "Create Successfully";
+		category = new();
+	}
+}

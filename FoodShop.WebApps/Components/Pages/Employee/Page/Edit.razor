@@ -1,0 +1,38 @@
+﻿@page "/page/edit/{id:int}"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@using Microsoft.EntityFrameworkCore
+@inject FoodShopDbContext db
+
+<Form Model="@model"  
+      Title="@title"
+      Message="@message"
+      ButtonText="Update"
+      OnSubmit="EditPage" />
+
+@code {
+
+    [Parameter] public int id { get; set; }
+
+    private Pages model = new();
+    private string message = "";
+    private string title = "Edit Page";
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = await db.Pages.FirstOrDefaultAsync(i => i.PageID == id);
+
+        if (model == null)
+        {
+            message = "Page not found";
+            return;
+        }
+    }
+
+    async Task EditPage()
+    {
+        db.Pages.Update(model);
+        await db.SaveChangesAsync();
+        message = "Page updated successfully";
+    }
+}

@@ -1,0 +1,64 @@
+﻿@using Microsoft.EntityFrameworkCore
+
+<link href="/css/employee/empForm.css" rel="stylesheet" />
+
+<div class="form-wrapper">
+    <EditForm Model="Model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div class="msg">@Message</div>
+        }
+
+        <a href="/customer" class="btn-back">Back</a>
+
+        <h3>@Title</h3>
+
+        <div>
+            <label>Customer Name</label>
+            <InputText class="form-control" @bind-Value="Model.CustomerName" />
+        </div>
+
+        <div>
+            <label>Date of Birth</label>
+            <InputDate class="form-control" @bind-Value="Model.DateBirth" />
+        </div>
+
+        <div>
+            <label>Address</label>
+            <InputText class="form-control" @bind-Value="Model.Address" />
+        </div>
+
+        <div>
+            <label>Phone</label>
+            <InputText class="form-control" @bind-Value="Model.Phone" />
+        </div>
+
+        <div>
+            <label>Email</label>
+            <InputText class="form-control" @bind-Value="Model.Email" />
+        </div>
+
+        <button type="submit" class="btn">
+            @ButtonText
+        </button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public Customer Model { get; set; } = new();
+    [Parameter] public string ButtonText { get; set; } = "Save";
+    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+
+    private async Task HandleSubmit()
+    {
+        if (OnSubmit.HasDelegate)
+        {
+            await OnSubmit.InvokeAsync();
+        }
+    }
+}

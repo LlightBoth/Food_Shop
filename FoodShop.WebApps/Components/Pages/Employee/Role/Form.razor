@@ -1,0 +1,88 @@
+﻿@page "/role/form/{RoleID:int?}"
+@inject NavigationManager NavManager
+
+<link href="/css/employee/empForm.css" rel="stylesheet" />
+
+<div class="form-wrapper">
+    <EditForm Model="Model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div class="msg">@Message</div>
+        }
+        <a href="/role" class="btn-back">Back</a>
+        <h3>@Title</h3>
+
+        <div>
+            <label>Role Name</label>
+            <InputText class="form-control" @bind-Value="Model.RoleName" />
+        </div>
+
+        <div>
+            <label>Description</label>
+            <InputText class="form-control" @bind-Value="Model.Descriptions" />
+        </div>
+
+        <div>
+            <label>Page Permissions</label>
+            <div class="permissions-container">
+                @foreach (var p in Pages)
+                {
+                    <div class="form-check">
+                        <input type="checkbox"
+                               class="form-check-input"
+                               id="page_@p.PageID"
+                               checked="@selectedPageIDs.Contains(p.PageID)"
+                               @onchange="e => TogglePageSelection(e, p.PageID)" />
+                        <label class="form-check-label" for="page_@p.PageID">@p.PageName</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <button class="btn btn-primary" type="submit">@ButtonText</button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public Roles Model { get; set; } = new();
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string ButtonText { get; set; } = "Save";
+    [Parameter] public List<Pages> Pages { get; set; } = new();
+    [Parameter] public EventCallback<List<int>> OnSubmit { get; set; }
+
+    [Parameter] public string Message { get; set; } = "Save";
+
+    private List<int> selectedPageIDs = new();
+
+    protected override void OnParametersSet()
+    {
+        // Pre-select checkboxes if RolePermissions exist
+        selectedPageIDs = Model.RolePermissions?.Select(rp => rp.PageID).ToList() ?? new List<int>();
+    }
+
+    private void TogglePageSelection(ChangeEventArgs e, int pageId)
+    {
+        // Checkbox in Blazor returns "on" if checked, null if unchecked
+        bool isChecked = e.Value != null;
+        if (isChecked)
+        {
+            if (!selectedPageIDs.Contains(pageId))
+                selectedPageIDs.Add(pageId);
+        }
+        else
+        {
+            selectedPageIDs.Remove(pageId);
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (OnSubmit.HasDelegate)
+        {
+            await OnSubmit.InvokeAsync(selectedPageIDs);
+        }
+    }
+}

@@ -1,0 +1,206 @@
+﻿@page "/"
+
+@inject NavigationManager navigation
+
+<PageTitle>Home</PageTitle>
+
+<link href="/css/client/home.css" rel="stylesheet" />
+
+<!-- HERO -->
+<section class="hero">
+    <section class="hero-text">
+        <p class="tag">Your favourite foods</p>
+        <h1>Discover new food deal</h1>
+        <p>Trusted by everyone in town</p>
+        <button class="menu-btn" @onclick="GoToMenu">View Menu</button>
+    </section>
+    <section class="hero-img">
+        @* Image Banner *@
+    </section>
+</section>
+
+<!-- CATEGORIES -->
+
+<section class="carousel">
+    <h1 class="section-title">Browse our categories</h1>
+    <p class="section-subtitle">With many choice and option</p>
+    <section class="category">
+        @foreach (var food in foods)
+        {
+            <section class="category-card @food">
+                <p>@food.ToUpper()</p>
+            </section>
+        }
+    </section>
+</section>
+
+<!-- POPULAR FOOD -->
+
+
+<section class="popularity">
+    <h2 class="section-title">Popular food</h2>
+    <p class="section-subtitle">Mostly order food by our customers</p>
+    <div class="popular-food">
+        @foreach (var food in favFoods)
+        {
+            <div class="food-card">
+                <div class="food-image-wrapper">
+                    <img src="@food["Image"]" alt="@food["Name"]" loading="lazy" />
+                    <div class="image-overlay">
+                        <button class="wishlist-btn" title="Add to Favorites">❤️</button>
+                    </div>
+                </div>
+
+                <div class="food-info">
+                    <div class="food-header">
+                        <h3>@food["Name"]</h3>
+                        <span class="rating-badge">⭐ @food["Rating"]</span>
+                    </div>
+
+                    <p class="category-text">@food["Category"]</p>
+
+                    <div class="food-footer">
+                        <div class="price-tag">
+                            <span class="amount">$@food["Price"]</span>
+                        </div>
+
+                        <button class="add-btn-v2">
+                            <span class="icon">+</span>
+                            Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+</section>
+
+<section class="how-it-works">
+    <h2 class="section-title">How it works</h2>
+    <div class="steps-container">
+        <div class="step">
+            <div class="step-icon">📍</div>
+            <h3>Select Location</h3>
+            <p>Choose your location and we'll find the best restaurants near you.</p>
+        </div>
+        <div class="step">
+            <div class="step-icon">🍔</div>
+            <h3>Pick your food</h3>
+            <p>Browse through hundreds of delicious menus and deals.</p>
+        </div>
+        <div class="step">
+            <div class="step-icon">🚀</div>
+            <h3>Fast Delivery</h3>
+            <p>Your food is prepared fresh and delivered right to your doorstep.</p>
+        </div>
+    </div>
+</section>
+
+<section class="features-banner">
+    <div class="feature-content">
+        <span class="badge">Why Choose Us</span>
+        <h2>The Fastest Food Delivery in Your City</h2>
+        <p>We don't just deliver food; we deliver happiness. Our fleet of riders ensures your meal arrives piping hot, every single time.</p>
+
+        <ul class="feature-list">
+            <li>✅ <strong>Quality Food:</strong> Only the best-rated restaurants.</li>
+            <li>✅ <strong>No Minimum Order:</strong> Order a snack or a feast.</li>
+            <li>✅ <strong>Live Tracking:</strong> Watch your burger travel to you.</li>
+        </ul>
+        <button class="secondary-btn">Learn More</button>
+    </div>
+    <div class="feature-image">
+        <img src="/image/cake.jpg" alt="Awesome Service" />
+    </div>
+</section>
+
+<h2 class="section-title">employee feedback</h2>
+<section class="testimonials">
+    @foreach (var t in testimonials)
+    {
+        <div class="t-card">
+            <p>@t["Message"]</p>
+            <div class="user-info">
+                <strong>- @t["User"]</strong>
+                <span>@t["Rating"]</span>
+            </div>
+        </div>
+    }
+</section>
+
+
+@code {
+
+    List<string> foods = ["food", "fastfood", "drink"];
+
+    List<Dictionary<string, object>> favFoods = new()
+{
+    new Dictionary<string, object>
+    {
+        { "Id", 1 },
+        { "Name", "Pizza" },
+        { "Category", "Fast Food" },
+        { "Price", 8.99 },
+        { "Image", "/image/pizza.jpg" },
+        { "Rating", 4.7 }
+    },
+
+    new Dictionary<string, object>
+    {
+        { "Id", 2 },
+        { "Name", "Burger" },
+        { "Category", "Fast Food" },
+        { "Price", 6.50 },
+        { "Image", "/image/burger.jpg" },
+        { "Rating", 4.5 }
+    },
+
+    new Dictionary<string, object>
+    {
+        { "Id", 3 },
+        { "Name", "French Fries" },
+        { "Category", "Snack" },
+        { "Price", 3.00 },
+        { "Image", "/image/fries.jpg" },
+        { "Rating", 4.3 }
+    },
+
+    new Dictionary<string, object>
+    {
+        { "Id", 4 },
+        { "Name", "Fried Chicken" },
+        { "Category", "Fast Food" },
+        { "Price", 7.25 },
+        { "Image", "/image/chicken.jpg" },
+        { "Rating", 4.6 }
+    }
+};
+
+    List<Dictionary<string, string>> testimonials = new()
+    {
+        new Dictionary<string, string>
+        {
+            { "User", "Alex R." },
+            { "Message", "The fastest delivery I've ever experienced. The pizza was still steaming!" },
+            { "Rating", "⭐⭐⭐⭐⭐" }
+        },
+        new Dictionary<string, string>
+        {
+            { "User", "Maria S." },
+            { "Message", "Absolutely loved the burger! Fresh, hot, and tasty." },
+            { "Rating", "⭐⭐⭐⭐⭐" }
+        },
+        new Dictionary<string, string>
+        {
+            { "User", "John D." },
+            { "Message", "Great variety of food and quick service. Highly recommend!" },
+            { "Rating", "⭐⭐⭐⭐⭐" }
+        }
+    };
+
+    void GoToMenu()
+    {
+        navigation.NavigateTo("/menu");
+    }
+}

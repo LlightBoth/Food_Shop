@@ -1,0 +1,26 @@
+﻿@page "/page/create"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+
+<Form Model="@model"
+      Title="@title"
+      Message="@message"
+      ButtonText="Create"
+      OnSubmit="CreatePage" />
+
+@code {
+
+    private Pages model = new();
+    private string message = "";
+    private string title = "Create Page";
+
+    async Task CreatePage()
+    {
+        db.Pages.Add(model);
+        await db.SaveChangesAsync();
+
+        message = "Page created successfully";
+        model = new();
+    }
+}

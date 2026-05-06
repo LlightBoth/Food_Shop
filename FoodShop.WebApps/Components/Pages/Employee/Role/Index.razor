@@ -1,0 +1,80 @@
+﻿@page "/role"
+@inherits FoodShop.WebApps.Middleware.CheckRoleBase
+
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+@inject NavigationManager NavManager
+
+@using Microsoft.EntityFrameworkCore
+@using FoodShop.Data
+
+<link href="/css/employee/empIndex.css" rel="stylesheet" />
+
+<PageTitle>Roles-Permission</PageTitle>
+
+<div class="role-header">
+	<h3>Role-Permissions</h3>
+	<a class="role-create" href="/role/create">Create new</a>
+</div>
+
+<div class="role-wrapper">
+	<table class="role-table">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Role</th>
+				<th>Permission</th>
+				<th>By employee</th>
+				<th>Create at</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			@for (int i = 0; i < roles.Count; i++)
+			{
+				var r = roles[i];
+				<tr>
+					<td>@(i + 1)</td>
+					<td>@r.RoleName</td>
+					<td>@r.RolePermissions.Count()</td>
+					<td>@r.ByEmployee</td>
+					<td>@r.CreatedAt</td>
+					<td>
+						<button @onclick="() => ViewRole(r.RoleID)">Edit</button>
+						<button @onclick="() => DeleteRole(r.RoleID)">Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@code {
+	private int counter = 0;
+	private List<Roles> roles = new();
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		roles = await db.Roles.Include(rp => rp.RolePermissions).ToListAsync();
+	}
+
+	private async Task DeleteRole(int id)
+	{
+		var role = await db.Roles.FindAsync(id);
+		if (role != null)
+		{
+			db.Roles.Remove(role);
+			await db.SaveChangesAsync();
+
+			// refresh UI
+			roles = await db.Roles.Include(rp => rp.RolePermissions).ToListAsync();
+		}
+	}
+
+	private async Task ViewRole(int id)
+	{
+		NavManager.NavigateTo($"/role/edit/{id}");
+	}
+}

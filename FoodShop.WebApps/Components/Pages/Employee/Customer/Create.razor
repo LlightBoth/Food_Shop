@@ -1,0 +1,27 @@
+﻿@page "/customer/create"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+
+<Form @key="customer"
+              Model="@customer"
+              Title="@title"
+              Message="@message"
+              ButtonText="Create"
+              OnSubmit="CreateCustomer" />
+
+@code {
+    private Customer customer = new();
+    private string message = "";
+    private string title = "Create Customer";
+
+    async Task CreateCustomer()
+    {
+        db.Customers.Add(customer);
+        await db.SaveChangesAsync();
+
+        message = "Customer created successfully";
+
+        customer = new(); // reset form
+    }
+}

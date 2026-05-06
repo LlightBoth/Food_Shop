@@ -1,0 +1,166 @@
+﻿/* =========================================
+   REGISTRATION OVERLAY
+   ========================================= */
+.register-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.register-wrapper {
+    display: grid;
+    /* This ensures the image and content share the space correctly */
+    grid-template-columns: 1fr 1.2fr; 
+    max-width: 850px;
+    width: 100%;
+    /* Use 'vh' for max-height to ensure it fits on laptop screens */
+    max-height: 90vh; 
+    background-color: var(--card-light, #ffffff);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: popIn 0.3s ease-out;
+}
+
+/* FIX: Ensure the image side has a defined width and fills space */
+.register-img {
+    background: url('/image/grilled chicken.jpg') center center no-repeat;
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    min-height: 100%; /* Forces the image to match the form height */
+}
+
+.register-content {
+    padding: 32px;
+    background-color: inherit;
+    /* Crucial: Allows the form to scroll if it's longer than the screen */
+    overflow-y: auto; 
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================
+   FORM ELEMENTS
+   ========================================= */
+.register-content h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-light, #333);
+    margin: 12px 0 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.register-content input {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid var(--border-light, #e0e0e0);
+    border-radius: 12px;
+    background-color: var(--bg-light, #fdfdfd);
+    color: var(--text-light, #333);
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.register-content input:focus {
+    border-color: var(--primary-color, #FF6B35);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.login-btn {
+    background-color: var(--primary-color, #FF6B35);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 0.25rem;
+    transition: opacity 0.2s;
+    width: 100%;
+/*    margin-bottom: 1rem;*/
+}
+
+.login-btn:hover {
+    opacity: 0.9;
+}
+
+/* Floating Toast Message at Top Left */
+.status-message {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 10001; /* Must be higher than the overlay (9999) */
+    background-color: var(--card-light, #ffffff);
+    color: #ff4d4d; /* Red for error */
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-left: 5px solid #ff4d4d;
+    animation: slideIn 0.3s ease-out;
+    max-width: 300px;
+}
+
+/* Success styling if needed */
+.status-message.success {
+    color: #2ecc71;
+    border-left-color: #2ecc71;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .status-message {
+    background-color: var(--card-dark, #252525);
+    color: #ff6e6e;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* =========================================
+   DARK MODE
+   ========================================= */
+[data-theme="dark"] .register-wrapper {
+    background-color: var(--card-dark, #252525);
+    border: 1px solid #444;
+}
+[data-theme="dark"] .register-content h2 {
+    color: var(--text-dark, #ffffff);
+}
+[data-theme="dark"] .register-content input {
+    background-color: #1a1a1a;
+    border-color: #444;
+    color: #fff;
+}
+
+/* ANIMATION */
+@keyframes popIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+    .register-wrapper { 
+        grid-template-columns: 1fr;
+        max-height: 95vh;
+    }
+    .register-img { 
+        height: 180px; /* Fixed height for mobile top-banner style */
+        min-height: 180px;
+    }
+}

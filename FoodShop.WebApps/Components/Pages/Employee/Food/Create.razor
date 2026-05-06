@@ -1,0 +1,35 @@
+﻿@page "/food/create"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@using Microsoft.EntityFrameworkCore
+@inject FoodShopDbContext db
+
+
+<Form Model="@food"
+      Title="@title"
+      Categories="@categories"
+      Message="@message"
+      ButtonText="Create"
+      OnSubmit="CreateFood" />
+
+@code {
+
+    private Foods food = new();
+    private List<Food_Categories> categories = new();
+    private string message = "";
+    private string title = "Create Food";
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await db.FoodCategories.ToListAsync();
+    }
+
+    async Task CreateFood()
+    {
+        db.Foods.Add(food);
+        await db.SaveChangesAsync();
+
+        message = "Food created successfully";
+        food = new();
+    }
+}

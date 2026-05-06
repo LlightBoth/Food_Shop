@@ -1,0 +1,163 @@
+﻿/* =========================================
+   THEME MAPPING (The Core)
+   ========================================= */
+.emp-container, [data-theme="light"] {
+    --current-bg: var(--bg-light);
+    --current-text: var(--text-light);
+    --current-card: var(--card-light);
+    --current-border: var(--border-light);
+}
+
+[data-theme="dark"] {
+    --current-bg: var(--bg-dark);
+    --current-text: var(--text-dark);
+    --current-card: var(--card-dark);
+    --current-border: #444444;
+}
+
+/* =========================================
+   LAYOUT STRUCTURE
+   ========================================= */
+.emp-container {
+    display: grid;
+    grid-template-areas:
+            "Aside Header"
+            "Aside Main"
+            "Aside Footer";
+    grid-template-columns: 250px 1fr;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+    background-color: var(--current-bg);
+    color: var(--current-text);
+}
+
+/* --- Header & Footer --- */
+.emp-header, .emp-footer {
+    background: var(--secondary-color);
+    color: white; /* Contrast against Blue */
+    padding: 16px;
+    font-weight: bold;
+    height: 64px;
+}
+
+.emp-header {
+    grid-area: Header;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+}
+
+.emp-header a {
+    text-decoration: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    transition: background var(--transition-speed);
+}
+
+.emp-header a:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Sidebar (Aside) --- */
+.emp-aside {
+    grid-area: Aside;
+    background-color: var(--current-nav-aside); /* Now reacts to Light/Dark mode */
+    color: var(--current-nav-text);
+    border-right: 1px solid var(--current-border);
+    padding: 10px 0;
+}
+
+.emp-aside .emp-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 16px;
+}
+
+.emp-aside .emp-nav a { 
+    padding: 16px 24px;
+    color: var(--current-nav-text);
+    opacity: 0.8;
+    text-decoration: none;
+    border-bottom: 1px solid var(--current-border);
+    transition: all var(--transition-speed);
+}
+
+.emp-aside .emp-nav a:hover {
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+/* Active: Use your Primary Orange as a small accent line */
+.emp-aside .emp-nav a.active {
+    background-color: rgba(255, 107, 53, 0.1); /* 10% Opacity of your Orange */
+    color: var(--primary-color);
+    border-left: 4px solid var(--primary-color);
+}
+
+/* --- Main & Content --- */
+.emp-main { 
+    grid-area: Main; 
+    padding: 2rem 0;
+}
+
+.emp-content {
+    padding: 2rem;
+    width: 94%;
+    justify-self: center;
+    background: var(--current-card);
+    color: var(--current-text);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--current-border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.emp-footer {
+    grid-area: Footer;
+    display: flex;
+    justify-content: center;
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+   ========================================= */
+@media (max-width: 768px) {
+    .emp-container {
+        grid-template-areas:
+            "Header"
+            "Aside"
+            "Main"
+            "Footer";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr auto;
+    }
+
+    .emp-aside .emp-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .emp-aside .emp-nav a {
+        flex: 1 1 33%;
+        border-bottom: none;
+        border-right: 1px solid var(--current-border);
+    }
+}
+
+/* =========================================
+   BLAZOR / FORMS OVERRIDES
+   ========================================= */
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid var(--primary-color); /* Uses your brand red/orange */
+}
+
+.validation-message {
+    color: var(--primary-color);
+}

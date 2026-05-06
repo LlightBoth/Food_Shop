@@ -1,0 +1,27 @@
+﻿@page "/job/create"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+
+
+<Form Model="@job"
+      Title="@title"
+      Message="@message"
+      ButtonText="Create"
+      OnSubmit="CreateJob" />
+
+@code {
+
+    private Jobs job = new();
+    private string message = "";
+    private string title = "Create Job";
+
+    async Task CreateJob()
+    {
+        db.Jobs.Add(job);
+        await db.SaveChangesAsync();
+
+        message = "Job created successfully";
+        job = new();
+    }
+}

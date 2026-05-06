@@ -1,0 +1,37 @@
+﻿@page "/invoice/create"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@using Microsoft.EntityFrameworkCore
+@inject FoodShopDbContext db
+
+<Form Model="@invoice" 
+      Title="@title"
+      sellers="@seller"
+      customers="@customer"
+      Message="@message"
+      ButtonText="Create"
+      OnSubmit="CreateInvoice" />
+
+@code {
+
+    private Invoices invoice = new();
+    private List<Customer> customer = new();
+    private List<Employee> seller = new();
+    private string message = "";
+    private string title = "Create Invoice";
+
+    protected override async Task OnInitializedAsync()
+    {
+        customer = await db.Customers.ToListAsync();
+        seller = await db.Employees.ToListAsync();
+    }
+
+    async Task CreateInvoice()
+    {
+        db.Invoices.Add(invoice);
+        await db.SaveChangesAsync();
+
+        message = "Invoice created successfully";
+        invoice = new();
+    }
+}

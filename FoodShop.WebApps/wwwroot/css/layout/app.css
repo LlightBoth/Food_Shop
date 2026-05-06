@@ -1,0 +1,265 @@
+:root {
+    /* Primary and Secondary Colors */
+    --primary-color: #FF6B35; /* Coral Orange for buttons, highlights */
+    --secondary-color: #4da6ff; /* Soft Blue for accents */
+    /* Light Theme */
+    --bg-light: #FDFDFD; /* Pure white background */
+    --text-light: #333333; /* Dark gray text for readability */
+    --card-light: #f9f9f9; /* Slightly grayish cards */
+    --border-light: #e0e0e0; /* Light border for separation */
+    /* Dark Theme*/
+    --bg-dark: #2e2e2e;
+    --text-dark: #ffffff;
+    --card-dark: #3a3a3a;
+
+    /* More */
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+
+    /*    Chart Theme*/
+    --chart-color-1: #FF6B35; /* primary */
+    --chart-color-2: #4da6ff; /* secondary */
+    --chart-color-3: #28a745; /* green */
+    --chart-color-4: #ffc107; /* yellow */
+    --chart-color-5: #dc3545; /* red */
+}
+
+/* Default / Light */
+.app-container, [data-theme="light"] {
+    --current-bg: var(--bg-light);
+    --current-text: var(--text-light);
+    --current-card: var(--card-light);
+    --current-border: var(--border-light);
+    --current-nav-aside: #334155;
+    --current-nav-text: var(--text-dark);
+
+    /*  Chart for light */
+    --chart-grid-color: rgba(0, 0, 0, 0.1);
+    --chart-text-color: #666;
+}
+
+/* Dark Override */
+[data-theme="dark"] {
+    --current-bg: var(--bg-dark);
+    --current-text: var(--text-dark);
+    --current-card: var(--card-dark);
+    --current-border: #444444;
+    --current-nav-aside: #1e293b;
+    --current-nav-text: var(--text-dark);
+    --chart-grid-color: rgba(255, 255, 255, 0.1);
+    --chart-text-color: #ddd;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    font-size: 1rem;
+    background-color: var(--current-bg);
+    color: var(--current-text);
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.app-container {
+    display: grid;
+    grid-template-rows: auto 1fr auto; /* header, content, footer */
+    min-height: 100vh; /* full viewport height */
+}
+/* Update your nav links */
+.app-header nav {
+    display: flex;
+    align-items: center; /* Ensures items are centered vertically */
+    gap: 20px; /* Increased gap for better spacing */
+    width: 100%;
+}
+
+.app-header nav a { 
+    color: var(--text-dark); /* Fixed variable */
+    text-decoration: none; 
+    padding: 8px 12px;
+    font-size: 1.1rem; /* Makes text slightly larger and more readable */
+    font-weight: 500;
+    transition: all var(--transition-speed) ease;
+}
+
+.app-header nav a:hover {
+    color: var(--secondary-color);
+    transform: translateY(-2px); /* Adds a premium feel on hover */
+}
+
+
+/* .app-header nav a:first-child { margin-right: auto; }
+.app-header nav a:nth-child(5) { margin-left: auto; } */
+.cart-link {
+    color: inherit; /* Keeps link color consistent with your theme */
+    transition: transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-link:hover {
+    transform: scale(1.1); /* Subtle "pop" on hover */
+    color: #6366f1; /* Or your preferred primary color */
+}
+
+/* Make the badge look premium */
+/* Adjust the cart badge border for your Orange header */
+.cart-badge {
+    border: 2px solid var(--primary-color) !important; /* Matches header background */
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+/* If you aren't using Bootstrap's fs-4 class, use this: */
+.bi-cart3 {
+    font-size: 1.5rem; 
+    vertical-align: middle;
+}
+.app-header, .app-footer {
+    background: var(--primary-color);
+    color: var(--text-dark);
+    padding: 16px;
+    font-weight: bold;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+}
+
+.app-content {
+    padding: 2rem;
+    width: 94%;
+    justify-self: center;
+}
+
+/* Make sidebar + content responsive */
+.app-content-inner {
+    display: grid;
+    grid-template-columns: 250px 1fr; /* sidebar + main content */
+    gap: 1rem;
+}
+
+.app-footer {
+    display: flex;
+    justify-content: center;
+}
+
+/* Container for the buttons */
+.theme-selector {
+    display: inline-flex;
+    background: var(--current-border, #e0e0e0);
+    padding: 4px;
+    border-radius: 50px;
+    gap: 2px;
+    position: fixed;
+    left: 32px;
+    bottom: 32px;
+    z-index: 5;
+    width: fit-content;
+    border: 1px solid var(--current-border, #ccc);
+}
+
+/* Individual Buttons */
+.theme-btn {
+    border: none;
+    outline: none;
+    padding: 8px 16px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--text-light, #555);
+    transition: all 0.3s ease;
+}
+
+    /* Icons inside buttons */
+    .theme-btn i {
+        font-style: normal;
+        font-size: 1.1rem;
+    }
+
+    /* Active State (The selected mode) */
+    .theme-btn.active {
+        background: var(--primary-color, #FF6B35);
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Hover effect for non-active buttons */
+    .theme-btn:not(.active):hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+/* Dark Mode adjustment for the container */
+[data-theme="dark"] .theme-selector {
+    background: #1a1a1a;
+    border-color: #444;
+}
+
+[data-theme="dark"] .theme-btn:not(.active) {
+    color: #bbb;
+}
+
+@media (max-width: 768px) {
+    .theme-selector {
+        left: 16px;
+        bottom: 16px;
+        padding: 2px; 
+    }
+
+    .theme-btn {
+        padding: 10px;
+        gap: 0;
+        justify-content: center;
+    }
+    .theme-btn i {
+        font-size: 1rem;
+        margin: 0;
+    }
+}
+
+
+h1:focus {
+    outline: none;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid #e50000;
+}
+
+.validation-message {
+    color: #e50000;
+}
+
+.blazor-error-boundary {
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }
+
+.darker-border-checkbox.form-check-input {
+    border-color: #929292;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}

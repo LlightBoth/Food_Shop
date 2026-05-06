@@ -1,0 +1,79 @@
+﻿@page "/invoice"
+@inherits FoodShop.WebApps.Middleware.CheckRoleBase
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+@inject NavigationManager NavManager
+
+@using Microsoft.EntityFrameworkCore
+@using FoodShop.Data
+
+<link href="/css/employee/empIndex.css" rel="stylesheet" />
+
+<PageTitle>Invoices</PageTitle>
+
+<div class="invoice-header">
+	<h3>Invoice</h3>
+	<a href="/invoice/create" class="invoice-create">Create new</a>
+</div>
+
+<div class="invoice-wrapper">
+	<table class="invoice-table">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Date</th>
+				<th>Buyer</th>
+				<th>Seller</th>
+				<th>Total</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var i in invoices)
+			{
+				<tr>
+					<td>@i.InvoiceID</td>
+					<td>@i.InvoiceDate</td>
+					<td>@i.Customer</td>
+					<td>@i.Seller</td>
+					<td>@i.TotalAmount</td>
+					<td>
+						<button @onclick="() => ViewInvoice(i.InvoiceID)">Edit</button>
+						<button @onclick="() => DeleteInvoice(i.InvoiceID)">Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@code {
+	private List<Invoices> invoices = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		invoices = await db.Invoices
+		.Include(c => c.Customer)
+		.Include(s => s.Seller)
+		.ToListAsync();
+	}
+
+	private async Task DeleteInvoice(int id)
+	{
+		var invoice = await db.Invoices.FindAsync(id);
+		if (invoice != null)
+		{
+			db.Invoices.Remove(invoice);
+			await db.SaveChangesAsync();
+
+			// Update the local list so the UI refreshes
+			invoices.Remove(invoice);
+		}
+	}
+
+	private async Task ViewInvoice(int id)
+	{
+		NavManager.NavigateTo($"/invoice/edit/{id}");
+	}
+}

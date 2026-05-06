@@ -1,0 +1,107 @@
+﻿@inject IWebHostEnvironment Environment
+
+
+<link href="/css/employee/empForm.css" rel="stylesheet" />
+
+<div class="form-wrapper">
+    <EditForm Model="Model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div class="msg">@Message</div>
+        }
+        <a href="/food" class="btn-back">Back</a>
+        <h3>@Title</h3>
+        <div>
+            <label>Food Name</label>
+            <InputText class="form-control" @bind-Value="Model.FoodName" />
+        </div>
+
+        <div>
+            <label>Category</label>
+            <InputSelect class="form-control" @bind-Value="Model.FoodCategoryID">
+                <option value="">-- Select Category --</option>
+                @foreach (var fc in Categories)
+                {
+                    <option value="@fc.CategoryID">@fc.CategoryName</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div>
+            <label>Quantity</label>
+            <InputNumber class="form-control" @bind-Value="Model.Qty" />
+        </div>
+
+        <div>
+            <label>Sell Price</label>
+            <InputNumber class="form-control" @bind-Value="Model.SellPrice" />
+        </div>
+
+        <div>
+            <label>Description</label>
+            <InputTextArea class="form-control" @bind-Value="Model.Description" />
+        </div>
+
+        <div>
+            <label>Food Image</label>
+            <InputFile class="form-control" OnChange="HandleFileSelected" />
+        </div>
+        @if (!string.IsNullOrEmpty(Model.FoodImageID))
+        {
+            <div class="mt-2">
+                <img src="upload/@Model.FoodImageID" style="max-width:200px; border-radius: 8px;" />
+            </div>
+        }
+
+        <button class="btn" type="submit">
+            @ButtonText
+        </button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public Foods Model { get; set; } = new();
+    [Parameter] public string ButtonText { get; set; } = "Save";
+    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+
+    [Parameter] public List<Food_Categories> Categories { get; set; } = new();
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            var extension = Path.GetExtension(file.Name);
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            if (!allowedExtensions.Contains(extension.ToLower()))
+            {
+                Message = "Invalid file type.";
+                return;
+            }
+
+            var uploadFolder = Path.Combine(Environment.WebRootPath, "upload");
+            if (!Directory.Exists(uploadFolder))
+                Directory.CreateDirectory(uploadFolder);
+
+            var uniqueFileName = Guid.NewGuid().ToString() + extension;
+            var path = Path.Combine(uploadFolder, uniqueFileName);
+
+            using var stream = new FileStream(path, FileMode.Create);
+            await file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5).CopyToAsync(stream);
+
+            Model.FoodImageID = uniqueFileName;
+            Message = "File uploaded successfully!";
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        await OnSubmit.InvokeAsync();
+    }
+
+}

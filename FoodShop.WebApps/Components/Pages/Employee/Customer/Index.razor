@@ -1,0 +1,76 @@
+﻿@page "/customer"
+@inherits FoodShop.WebApps.Middleware.CheckRoleBase
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+@inject NavigationManager NavManager
+
+@using Microsoft.EntityFrameworkCore
+@using FoodShop.Data
+
+<link href="/css/employee/empIndex.css" rel="stylesheet" />
+
+<PageTitle>Customers</PageTitle>
+
+<div class="cust-header">
+	<h3>Customer</h3>
+	<a href="/customer/create" class="cust-create">Create new</a>
+</div>
+
+<div class="customer-wrapper">
+	<table class="customer-table">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Email</th>
+				<th>Status</th>
+				<th>Created At</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var c in customers)
+			{
+				<tr>
+					<td>@c.CustomerID</td>
+					<td>@c.CustomerName</td>
+					<td>@c.Email</td>
+					<td>@c.Status</td>
+					<td>@c.CreatedAt?.ToString("yyyy-MM-dd")</td>
+					<td>
+						<button @onclick="() => ViewCustomer(c.CustomerID)">Create</button>
+						<button @onclick="() => DeleteCustomer(c.CustomerID)">Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@code {
+	private List<Customer> customers = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		customers = await db.Customers.ToListAsync();
+	}
+
+	private async Task DeleteCustomer(int id)
+	{
+		var customer = await db.Customers.FindAsync(id);
+
+		if (customer != null)
+		{
+			db.Customers.Remove(customer);
+			await db.SaveChangesAsync();
+
+			customers.Remove(customer);
+		}
+	}
+
+	private async Task ViewCustomer(int id)
+	{
+		NavManager.NavigateTo($"/customer/edit/{id}");
+	}
+}

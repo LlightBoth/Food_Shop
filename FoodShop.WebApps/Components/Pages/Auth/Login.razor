@@ -1,0 +1,124 @@
+﻿@page "/login"
+
+@using FoodShop.WebApps.Services
+
+@inject FoodShopDbContext db
+@inject NavigationManager NavManager
+@inject CurrentUser user
+@inject UserSession UserSession
+
+<PageTitle>Login</PageTitle>
+
+<link href="/css/auth/login.css" rel="stylesheet" />
+
+@if(isVisible)
+{ 
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        /* Determine if it's success or error for styling */
+        var statusClass = Message.Contains("successfully") ? "success" : "";
+        <div class="status-message @statusClass">
+            @Message
+        </div>
+    }
+
+    <div class="login-overlay" @onclick="ClosePopup">
+        @* stopPropagation prevents clicking the white box from closing the popup *@
+        <div class="login-wrapper" @onclick:stopPropagation="true">
+            <button class="close-btn" @onclick="ClosePopup">×</button>
+
+            <aside class="login-img"></aside>
+            <aside class="login-content">
+                <EditForm Model="@customer" OnValidSubmit="LoginUser">
+                    <section class="top-content">
+                        <h2>Email</h2>
+                        <input type="email" placeholder="Enter your email" @bind='@Email'/>
+                        <h2>Password</h2>
+                        <input type="password" placeholder="••••••••" @bind='@Password' />
+                        <a href="/forgot-account">Forgot password?</a>
+                    </section>
+
+                    <section class="bottom-content">
+                        <p>Don't have an account? <a href="/register">Register</a></p>
+                        <button type="submit" class="login-btn">Login</button>
+                    </section>
+
+                </EditForm>
+            </aside>
+        </div>
+    </div>
+}
+
+
+@code {
+    private Customer customer = new();
+    private List<Customer> customers = new List<Customer>();
+    private List<Employee> employees = new List<Employee>();
+
+    // Login property 
+    private string Email { get; set; }
+    private string Password { get; set; }
+
+    private bool isVisible = true;
+    private string Message = "";
+
+    // Return All Users
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await db.Customers.ToListAsync();
+        employees = await db.Employees.ToListAsync();
+    }
+
+    private async Task LoginUser()
+    {
+        // Check customers first
+        var userAccount = customers.FirstOrDefault(c => c.Email == Email);
+        if (userAccount != null && userAccount.Password == Password)
+        {
+            user.Session = new UserSession
+            {
+                UserId = userAccount.CustomerID,
+                UserName = userAccount.CustomerName,
+                IsEmployee = false
+            };
+            await user.SaveUserSession();
+
+            UserSession.UserId = userAccount.CustomerID;
+            UserSession.UserName = userAccount.CustomerName;
+            Console.WriteLine($"userID: {UserSession.UserId}");
+            NavManager.NavigateTo(user.GetRoute());
+            return;
+        }
+
+        // Check employees
+        var employeeAccount = employees.FirstOrDefault(e => e.Email == Email);
+        if (employeeAccount != null && employeeAccount.Password == Password)
+        {
+            user.Session = new UserSession
+            {
+                UserId = employeeAccount.EmployeeID,
+                UserName = employeeAccount.EmployeeName,
+                IsEmployee = true
+            };
+            await user.SaveUserSession();
+            UserSession.UserId = employeeAccount.EmployeeID;
+            UserSession.UserName = employeeAccount.EmployeeName;
+            Console.WriteLine($"userID: {UserSession.UserId}");
+            NavManager.NavigateTo(user.GetRoute());
+            return;
+        }
+
+        Message = "Login credentials failed.";
+    }
+
+    public void ClosePopup()
+    {
+        isVisible = false;
+        NavManager.NavigateTo("/");
+    }
+    public void ShowPopup()
+    {
+        isVisible = true;
+    }
+
+}

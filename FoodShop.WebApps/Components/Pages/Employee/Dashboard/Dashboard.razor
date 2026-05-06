@@ -1,0 +1,193 @@
+﻿@page "/dashboard"
+@inherits FoodShop.WebApps.Middleware.CheckRoleBase
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@using FoodShop.WebApps.Services;
+@inject ChartServices chartServices
+
+
+<PageTitle>Dashboard</PageTitle>
+<link href="/css/employee/dashboard.css" rel="stylesheet" />
+
+<div class="info-wrapper">
+    <header class="info-header d-flex flex-wrap gap-3 justify-content-between p-4">
+        <div class="record revenue-record flex-fill">
+            <div class="record-content">
+                <i class="fas fa-chart-line"></i>
+                <div class="details">
+                    <span class="label">Revenue</span>
+                    <h3 class="value">$42,500</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="record customer-record flex-fill">
+            <div class="record-content">
+                <i class="fas fa-users"></i>
+                <div class="details">
+                    <span class="label">Customers</span>
+                    <h3 class="value">1,284</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="record orders-record flex-fill">
+            <div class="record-content">
+                <i class="fas fa-shopping-cart"></i>
+                <div class="details">
+                    <span class="label">Orders</span>
+                    <h3 class="value">856</h3>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="info-chart">
+	    <div class="chart daily-profit">
+            <canvas id="paymentChart" ></canvas>
+        </div>
+	    <div class="chart top-food">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </section>
+
+    <section class="info-status">
+        <div class="status-header">
+            <div>Invoice</div>
+            <div>Name</div>
+            <div>Category</div>
+            <div>Qty</div>
+            <div>Price</div>
+            <div>Status</div>
+        </div>
+
+        @foreach(var s in status)
+        {
+            <div class="status-wrapper">
+                <div class="user-invoice">@s["invoiceID"]</div>
+                <div class="user-name">@s["Name"]</div>
+                <div class="user-category">@s["Category"]</div>
+                <div class="user-qty">@s["Qty"]</div>
+                <div class="user-price">$@s["Price"]</div>
+                <div class="user-status">@s["Status"]</div>
+            </div>
+        
+        }
+    </section>
+</div>
+
+@code {
+    List<Dictionary<string, object>> status = new()
+    {
+        new Dictionary<string, object>
+        {
+            { "userId", 1 },
+            { "Name", "Ben" },
+            { "invoiceID", 1 },
+            { "Category", "Asian Food" },
+            { "Qty", 2 },
+            { "Price", 8.50 },
+            { "Status", "Pending" },
+        },
+        new Dictionary<string, object>
+        {
+            { "userId", 2 },
+            { "Name", "Anna" },
+            { "invoiceID", 2 },
+            { "Category", "Western Food" },
+            { "Qty", 1 },
+            { "Price", 12.00 },
+            { "Status", "Pending" },
+        },
+        new Dictionary<string, object>
+        {
+            { "userId", 3 },
+            { "Name", "David" },
+            { "invoiceID", 3 },
+            { "Category", "Dessert" },
+            { "Qty", 3 },
+            { "Price", 4.75 },
+            { "Status", "Completed" },
+        },
+        new Dictionary<string, object>
+        {
+            { "userId", 4 },
+            { "Name", "Sophia" },
+            { "invoiceID", 4 },
+            { "Category", "Drinks" },
+            { "Qty", 2 },
+            { "Price", 3.25 },
+            { "Status", "Pending" },
+        },
+        new Dictionary<string, object>
+        {
+            { "userId", 5 },
+            { "Name", "Michael" },
+            { "invoiceID", 5 },
+            { "Category", "Fast Food" },
+            { "Qty", 1 },
+            { "Price", 6.99 },
+            { "Status", "Pending" },
+        }
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        // Chart 1: Payments
+        var paymentConfig = new ChartConfig
+        {
+            Type = "line",
+            Data = new ChartData
+            {
+                Labels = new[] { "Jan", "Feb", "Mar", "Apr", "May", "June", "July" },
+                Datasets = new List<ChartDataset>
+                {
+                    new ChartDataset
+                    {
+                        Label = "Monthly Payments ($)",
+                        Data = new double[] { 1200, 1500, 1350, 1650, 1500, 1250, 1450 },
+                        BackgroundColor = new[] {"rgba(75,192,192,0.2)"},
+                        BorderColor = "rgba(75,192,192,1)",
+                        Fill = true
+                    }
+                }
+            }
+        };
+
+        // Chart 2: Category
+        var categoryConfig = new ChartConfig
+        {
+            Type = "bar",
+            Data = new ChartData
+            {
+                Labels = new[] { "Fast Food", "Drink", "Dessert", "Food" },
+                Datasets = new List<ChartDataset>
+        {
+            new ChartDataset
+            {
+                Label = "Top Categories",
+                Data = new double[] { 90, 75, 120, 90 },
+                BackgroundColor = new[] { "#ff6384", "#36a2eb", "#4bc0c0", "#ff9f40" }
+            }
+        }
+            },
+            Options = new
+            {
+                responsive = true,
+                maintainAspectRatio = false, // Makes chart it expand
+                plugins = new
+                {
+                    legend = new { position = "top" }
+                }
+            }
+        };
+
+        await chartServices.RenderChart("paymentChart", paymentConfig);
+        await chartServices.RenderChart("categoryChart", categoryConfig);
+    }
+}
+
+
+}

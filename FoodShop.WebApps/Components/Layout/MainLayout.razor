@@ -1,0 +1,107 @@
+﻿@inherits LayoutComponentBase
+
+@using FoodShop.WebApps.Services
+@inject CartServices CartSvc
+@inject CurrentUser user
+@inject IJSRuntime JS
+
+@implements IDisposable
+
+<link href="/css/layout/app.css" rel="stylesheet" />
+
+<div class="app-container" data-theme="@mode">
+
+    <header class="app-header">
+        <div class="container-fluid">
+            <nav class="d-flex align-items-center">
+                <NavLink href="/" class="fs-4 fw-bold text-white me-auto">FoodieHub</NavLink>
+
+                <NavLink href="/" class="d-none d-md-block">Home</NavLink>
+                <NavLink href="/menu">Menu</NavLink>
+                <NavLink href="/about" class="d-none d-md-block">About</NavLink>
+
+                <NavLink href="/cart" class="cart-link btn position-relative text-white mx-2">
+                    <i class="bi bi-cart3 fs-4"></i>
+                    @if (CartCount > 0)
+                    {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge">
+                            @CartCount
+                        </span>
+                    }
+                </NavLink>
+
+                @if (user.IsLoggedIn)
+                {
+                    <div class="d-flex gap-2 align-items-center">
+                        @if (user.Session.IsEmployee)
+                        {
+                            <NavLink href="/dashboard" class="btn btn-outline-light btn-sm">Dashboard</NavLink>
+                        }
+                        <button class="btn btn-outline-warning text-white fw-bold" @onclick="IsLogout">Logout</button>
+                    </div>
+                }
+                else
+                {
+                    <NavLink href="/login" class="btn btn-outline-light btn-sm">Login</NavLink>
+                }
+            </nav>
+        </div>
+    </header>
+    
+    <div class="theme-selector">
+        <button class="theme-btn @(mode == "light" ? "active" : "")" @onclick='() => ToggleTheme("light")'>
+            <i>☀️</i>
+        </button>
+        <button class="theme-btn @(mode == "dark" ? "active" : "")" @onclick='() => ToggleTheme("dark")'>
+            <i>🌙</i>
+        </button>
+    </div>
+
+    <main class="app-content">
+        @Body
+    </main>
+
+    <footer class="app-footer">
+        <p>&copy; 2026 FoodieHub - All Rights Reserved</p>
+    </footer>
+
+</div>
+
+@code {
+    private int CartCount => CartSvc.Items.Sum(x => x.Quantity);
+    private string mode = "light";
+
+    protected override void OnInitialized()
+    {
+        CartSvc.OnChange += StateHasChanged;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // We must wait for firstRender because JSInterop
+            await user.LoadUserSession();
+            // isn't available until the browser is ready
+            await CartSvc.LoadCart();
+
+            // Tell the ui to refresh 
+            StateHasChanged();
+        }
+    }
+
+    private async Task IsLogout()
+    {
+        await user.ClearUserSession();
+    }
+    private async Task ToggleTheme(string newMode)
+    {
+        mode = newMode;
+        await JS.InvokeVoidAsync("setTheme", mode);
+    }
+
+    public void Dispose()
+    {
+        // Unsubscribe when the component is destroyed to prevent memory leaks
+        CartSvc.OnChange -= StateHasChanged;
+    }
+}

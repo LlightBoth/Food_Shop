@@ -1,0 +1,73 @@
+﻿@page "/category"
+@inherits FoodShop.WebApps.Middleware.CheckRoleBase
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+@inject NavigationManager NavManager
+
+@using Microsoft.EntityFrameworkCore
+@using FoodShop.Data
+
+<link href="/css/employee/empIndex.css" rel="stylesheet" />
+
+<PageTitle>Foods Categories</PageTitle>
+
+<div class="category-header">
+	<h3>Food Categories</h3>
+	<a href="/category/create" class="category-create" >Create new</a>
+</div>
+
+<div class="category-wrapper">
+	<table class="category-table">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Description</th>
+				<th>Create at</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var fc in food_Categories)
+			{
+				<tr>
+					<td>@fc.CategoryID</td>
+					<td>@fc.CategoryName</td>
+					<td>@fc.Descriptions</td>
+					<td>@fc.CreatedAt</td>
+					<td>
+						<button @onclick="() => ViewFood(fc.CategoryID)">Edit</button>
+						<button @onclick="() => DeleteFood(fc.CategoryID)">Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@code {
+	private List<Food_Categories> food_Categories = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		food_Categories = await db.FoodCategories.ToListAsync();
+	}
+
+	private async Task DeleteFood(int id)
+	{
+		var food_category = await db.FoodCategories.FindAsync(id);
+		if (food_Categories != null)
+		{
+			db.FoodCategories.Remove(food_category);
+			await db.SaveChangesAsync();
+			food_Categories.Remove(food_category);
+		}
+	}
+
+	private async Task ViewFood(int id)
+	{
+		NavManager.NavigateTo($"/category/edit/{id}");
+	}
+
+}

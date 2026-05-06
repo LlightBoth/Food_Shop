@@ -1,0 +1,96 @@
+﻿@page "/menu"
+@using FoodShop.WebApps.Services
+@using FoodShop.Data
+@using FoodShop.Models
+
+@inject CartServices CartSv
+@inject NavigationManager NavManager
+@inject FoodShopDbContext db
+
+<PageTitle>Menu</PageTitle>
+<link href="/css/client/menu.css" rel="stylesheet" />
+
+<div class="menu-wrapper">
+    <section class="menu-header-img"></section>
+
+    <section class="menu-category">
+        <p>Search by</p>
+        <select class="category-select" @onchange="FilterCategory">
+            <option value="">All Category</option>
+            @foreach (var cat in allCategories)
+            {
+                <option value="@cat.CategoryName">@cat.CategoryName</option>
+            }
+        </select>
+    </section>
+
+    <main class="menu-info">
+        @foreach (var food in filteredFoods)
+        {
+            <div class="food-card" @onclick='() => NavManager.NavigateTo($"/food-details/{food.FoodID}")'>
+                <div class="food-image-wrapper">
+                    <img src="/upload/@(string.IsNullOrEmpty(food.FoodImageID) ? "placeholder.png" : food.FoodImageID)"
+                         alt="@food.FoodName"
+                         loading="lazy" />
+                </div>
+
+                <div class="food-info">
+                    <div class="food-header">
+                        <p class="food-name">@food.FoodName</p>
+                        <span class="rating-badge">⭐ 4.5</span>
+                    </div>
+
+                    <p class="category-text">@food.FoodCategory?.CategoryName</p>
+
+                    <div class="food-footer">
+                        <p class="amount">$@food.SellPrice.ToString("F2")</p>
+
+                        <button class="add-btn-v2"
+                                @onclick:stopPropagation="true"
+                                @onclick="() => AddToCart(food)">
+                            <span class="icon">+</span>
+                            <span>Add</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </main>
+</div>
+
+@code {
+    private List<Foods> foods = new();
+    private List<Foods> filteredFoods = new();
+    private List<Food_Categories> allCategories = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load foods with category
+        foods = await db.Foods.Include(f => f.FoodCategory).ToListAsync();
+        filteredFoods = foods;
+
+        // Extract categories for dropdown
+        allCategories = await db.FoodCategories.ToListAsync();
+    }
+
+    private async Task AddToCart(Foods food)
+    {
+        if (food == null) return;
+
+        await CartSv.AddToCart(
+            food.FoodID,
+            food.FoodName,
+            string.IsNullOrEmpty(food.FoodImageID) ? "placeholder.png" : food.FoodImageID,
+            food.SellPrice,
+            1
+        );
+    }
+
+    private void FilterCategory(ChangeEventArgs e)
+    {
+        var selected = e.Value?.ToString() ?? "";
+        filteredFoods = string.IsNullOrWhiteSpace(selected)
+            ? foods
+            : foods.Where(f => f.FoodCategory?.CategoryName == selected).ToList();
+    }
+}

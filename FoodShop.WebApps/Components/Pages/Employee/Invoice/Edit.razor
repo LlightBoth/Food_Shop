@@ -1,0 +1,49 @@
+﻿@page "/invoice/edit/{id:int}"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@using Microsoft.EntityFrameworkCore
+@inject FoodShopDbContext db
+
+
+<Form Model="@invoice"  
+      Title="@title"
+      sellers="@seller"
+      customers="@customer"
+      Message="@message"
+      ButtonText="Update"
+      OnSubmit="EditInvoice" />
+
+@code {
+
+    [Parameter] public int id { get; set; }
+
+    private Invoices invoice = new();
+    private List<Customer> customer = new();
+    private List<Employee> seller = new();
+    private string message = "";
+    private string title = "Edit Invoice";
+
+    protected override async Task OnInitializedAsync()
+    {
+        invoice = await db.Invoices
+        .Include(c => c.Customer)
+        .Include(s => s.Seller)
+        .FirstOrDefaultAsync(i => i.InvoiceID == id);
+
+        if (invoice == null)
+        {
+            message = "Invoice not found";
+            return;
+        }
+
+        customer = await db.Customers.ToListAsync();
+        seller = await db.Employees.ToListAsync();
+    }
+
+    async Task EditInvoice()
+    {
+        db.Invoices.Update(invoice);
+        await db.SaveChangesAsync();
+        message = "Invoice updated successfully";
+    }
+}

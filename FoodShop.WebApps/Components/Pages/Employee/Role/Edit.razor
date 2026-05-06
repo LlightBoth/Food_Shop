@@ -1,0 +1,69 @@
+﻿@page "/role/edit/{id:int}"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@inject FoodShopDbContext db
+
+<Form Model="@role"
+      Title="@title"
+      Pages="@pages"
+      Message="@message"
+      ButtonText="Update"
+      OnSubmit="@(selectedIds => SaveRole(selectedIds))" />
+
+@code {
+    [Parameter] public int id { get; set; }
+
+    private Roles role = new();
+    private List<Pages> pages = new();
+    private string message = "";
+    private string title = "Edit Role";
+
+    protected override async Task OnInitializedAsync()
+    {
+        role = await db.Roles
+            .Include(r => r.RolePermissions)
+            .FirstOrDefaultAsync(r => r.RoleID == id);
+
+        if (role == null)
+        {
+            message = "Role not found";
+            return;
+        }
+
+        pages = await db.Pages.ToListAsync();
+    }
+
+    private async Task SaveRole(List<int> selectedPageIDs)
+    {
+        if (role == null) return;
+
+        // Remove old RolePermissions
+        var oldPermissions = await db.Role_Permissions
+            .Where(rp => rp.RoleID == role.RoleID)
+            .ToListAsync();
+        db.Role_Permissions.RemoveRange(oldPermissions);
+
+        // Add new RolePermissions
+        foreach (var pid in selectedPageIDs)
+        {
+            db.Role_Permissions.Add(new Role_Permissions
+            {
+                RoleID = role.RoleID,
+                PageID = pid
+            });
+        }
+
+        // Update role info
+        role.UpdatedAt = DateTime.Now;
+        db.Roles.Update(role);
+
+        await db.SaveChangesAsync();
+
+        // Refresh RolePermissions
+        role.RolePermissions = await db.Role_Permissions
+            .Where(rp => rp.RoleID == role.RoleID)
+            .ToListAsync();
+
+        message = "Role updated successfully";
+    }
+}

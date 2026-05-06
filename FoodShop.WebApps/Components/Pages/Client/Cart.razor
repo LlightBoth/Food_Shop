@@ -1,0 +1,314 @@
+﻿@page "/cart"
+
+@using FoodShop.WebApps.Services
+@using FoodShop.Models
+@implements IDisposable
+
+@inject CartServices CartSvc
+@inject CurrentUser user
+@inject FoodShopDbContext db
+@inject NavigationManager navigation
+
+<link rel="stylesheet" href="/css/client/cart.css" />
+
+<div class="page-header">
+    <h3>Your Shopping Cart</h3>
+    <button class="btn-clear" @onclick="async () => await ClearCart()">Clear Cart</button>
+</div>
+
+<div class="cart-container">
+    <div class="cart-items-wrapper">
+        @if (CartSvc.Items == null)
+        {
+            <div class="loading-state">Loading your delicious items...</div>
+        }
+        else if (!CartSvc.Items.Any())
+        {
+            <div class="empty-cart-message">
+                <p>Your cart is empty!</p>
+                <a href="/menu" class="btn-menu">Back to Menu</a>
+            </div>
+        }
+        else
+        {
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in CartSvc.Items)
+                    {
+                        <tr>
+                            <td class="product-cell">
+                                <div class="cart-product-info">
+                                    @* FIX: Use item.ImagePath directly *@
+                                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                                    {
+                                        <img src="/upload/@item.ImagePath" alt="@item.FoodName" class="cart-img" />
+                                    }
+                                    else
+                                    {
+                                        <img src="upload/placeholder.png" alt="No Image" class="cart-img" />
+                                    }
+                                    <div class="cart-details">
+                                        @* FIX: Use item.FoodName directly *@
+                                        <strong>@item.FoodName</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>$@item.UnitPrice.ToString("F2")</td>
+                            <td>
+                                <div class="qty-selector">
+                                    <button @onclick="async () => await Decrease(item)">-</button>
+                                    <span>@item.Quantity</span>
+                                    <button @onclick="async () => await Increase(item)">+</button>
+                                </div>
+                            </td>
+                            <td>$@item.TotalPrice.ToString("F2")</td>
+                            <td>
+                                <button class="btn-remove" @onclick="async () => await Remove(item)">&times;</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <div class="cart-summary">
+        <section class="payment-section">
+            <h4>-- Payment Methods --</h4>
+            <div class="select-payment">
+                <InputRadioGroup @bind-Value="selectedPayment" class="payment-inline">
+                    @foreach (var p in paymentMethod.PaymentMethod)
+                    {
+                        <label class="payment-inline-item">
+                            <InputRadio Value="@p" />
+                            @p
+                        </label>
+                    }
+                </InputRadioGroup>
+            </div>
+
+            <div class="payment-summary">   
+                
+                @if (selectedPayment == "QR")
+                {
+                    <div class="qr-section">
+                        <img src="@qrCodeUrl" alt="QR Payment" />
+                        <p>Scan this QR with your banking app</p>
+                        <p><strong>Amount: $@Total.ToString("F2")</strong></p>
+                    </div>
+                }
+                else if (selectedPayment == "Transfer")
+                {
+                    <div class="bank-transfer">
+                        <p><strong>Bank:</strong> ABA Bank</p>
+                        <p><strong>Account Name:</strong> Me</p>
+                        <p><strong>Account No:</strong> 123 456 789</p>
+                    </div>
+                }
+                else
+                {
+                    <h4>Cash on Delivery</h4>
+                }
+
+            </div>
+
+            <!-- ✅ Billing Info (important in real checkout) -->
+            <div class="billing-section">
+                <h4>-- Billing Details --</h4>
+
+                <InputText @bind-Value="customerName" placeholder="Full Name" />
+                <InputText @bind-Value="phone" placeholder="Phone Number" />
+                <InputText @bind-Value="address" placeholder="Address" />
+            </div>
+
+            <!-- ✅ Validation message -->
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <p class="text-success">@errorMessage</p>
+            }
+        </section>
+
+        <section class="order-section">
+            <h4>-- Order Summary --</h4>
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>$@Subtotal.ToString("F2")</span>
+            </div>
+            <div class="summary-row">
+                <span>Shipping</span>
+                <span>Free</span>
+            </div>
+            <hr />
+            <div class="summary-row total">
+                <span>Total</span>
+                <span>$@Total.ToString("F2")</span>
+            </div>
+            <button class="btn-checkout"
+                    disabled="@(!IsCompletePaymentInfo())"
+                    @onclick="HandleCheckout">
+                Proceed to Checkout
+            </button>
+        </section>
+    </div>
+</div>
+
+
+@* Code-Here *@
+@code {
+    public Invoices invoices { get; set; } = new();
+    public List<Invoice_Details> invoice_Details { get; set; } = new List<Invoice_Details>();
+    public Payment paymentMethod { get; set; } = new();
+
+    private string selectedPayment { get; set; }
+
+    // ✅ Billing fields
+    private string customerName;
+    private string phone;
+    private string address;
+
+    private string errorMessage;
+
+    private bool completePaymentInfo = true;
+
+    private decimal Subtotal => CartSvc.Items?.Sum(x => x.TotalPrice) ?? 0;
+    private decimal Total => Subtotal;
+
+
+
+    // ✅ QR generator
+    private string qrCodeUrl =>
+        $"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAY-${Total}";
+
+    protected override void OnInitialized()
+    {
+        // Change State UI
+        CartSvc.OnChange += StateHasChanged;
+
+        // ✅ default payment
+        selectedPayment =  paymentMethod.PaymentMethod.First();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Load user session
+            await user.LoadUserSession();
+
+            await CartSvc.LoadCart();
+            StateHasChanged();
+        }
+    }
+
+    private async Task Increase(CartItem item)
+    {
+        item.Quantity++;
+        await CartSvc.SaveCartToLocalStorage();
+    }
+
+    private async Task Decrease(CartItem item)
+    {
+        if (item.Quantity > 1)
+        {
+            item.Quantity--;
+            await CartSvc.SaveCartToLocalStorage();
+        }
+        else
+        {
+            await CartSvc.RemoveItem(item.FoodId);
+        }
+    }
+
+    private async Task Remove(CartItem item)
+    {
+        await CartSvc.RemoveItem(item.FoodId);
+    }
+
+    private async Task ClearCart()
+    {
+        await CartSvc.ClearCart();
+    }
+
+    private async Task HandleCheckout()
+    {
+        errorMessage = "";
+
+        if (!IsCompletePaymentInfo())
+        {
+            errorMessage = "Please complete all required fields.";
+            return;
+        }
+
+        // ✅ sync selected payment
+        paymentMethod.DefaultPayment = selectedPayment;
+
+        var invoice = new Invoices
+        {
+            SellerID = 2,
+            CustomerID = user.Session.UserId.Value,
+            TotalAmount = Total
+        };
+        await db.Invoices.AddAsync(invoice);
+        await db.SaveChangesAsync(); // Save first to get InvoiceID
+
+        // Add invoice details
+        foreach (var cartItem in CartSvc.Items)
+        {
+            var food = await db.Foods.FindAsync(cartItem.FoodId); // Make sure it exists
+            if (food != null)
+            {
+                var detail = new Invoice_Details
+                {
+                    InvoiceID = invoice.InvoiceID,
+                    FoodID = cartItem.FoodId, // map correctly
+                    Qty = cartItem.Quantity,
+                    Price = cartItem.UnitPrice
+                };
+                await db.InvoiceDetails.AddAsync(detail);
+            }
+        }
+        await db.SaveChangesAsync();
+
+        // Optionally, clear cart after checkout
+        await ClearCart();
+
+        // Provide success feedback
+        errorMessage = "Order placed successfully!";
+    }
+
+    private bool IsCompletePaymentInfo()
+    {
+        // If user is NOT logged in, can't complete payment
+        if (!user.IsLoggedIn)
+        {
+            navigation.NavigateTo("/login");
+            return false;
+        } 
+
+        // cart check
+        if (!(CartSvc.Items?.Any() ?? false))
+            return false;
+
+        // billing check
+        if (string.IsNullOrWhiteSpace(customerName) ||
+            string.IsNullOrWhiteSpace(phone) ||
+            string.IsNullOrWhiteSpace(address))
+            return false;
+
+        return true;
+    }
+
+    public void Dispose()
+    {
+        CartSvc.OnChange -= StateHasChanged;
+    }
+}

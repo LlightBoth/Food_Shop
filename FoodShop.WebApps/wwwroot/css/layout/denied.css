@@ -1,0 +1,138 @@
+﻿/* 1. Main Wrapper - Full Screen Centering */
+.denied-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 2. Theme Specific Backgrounds */
+.denied-container[data-theme="light"] {
+    background: radial-gradient(circle at top right, #ffffff, #e9ecef);
+    color: #212529;
+}
+
+.denied-container[data-theme="dark"] {
+    background: radial-gradient(circle at top right, #1a1c23, #08090a);
+    color: #f8f9fa;
+}
+.denied-container[data-theme="dark"] .text-muted {
+    color: snow !important;
+}
+
+/* 3. Decorative Icon Watermarks */
+/* Add these using pseudo-elements so you don't have to change the HTML */
+.denied-container::before, 
+.denied-container::after {
+    content: "\F52C"; /* Bootstrap Icon Code for Shield-Lock */
+    font-family: "bootstrap-icons";
+    position: absolute;
+    z-index: 0;
+    opacity: 0.04;
+    pointer-events: none;
+}
+
+.denied-container::before {
+    font-size: 25rem;
+    top: -5%;
+    left: -5%;
+    transform: rotate(-15deg);
+}
+
+.denied-container::after {
+    font-size: 15rem;
+    bottom: 5%;
+    right: 5%;
+    transform: rotate(20deg);
+}
+
+/* 4. The Card - Glassmorphism Style */
+.denied-card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 480px;
+    padding: 3.5rem 2rem;
+    border-radius: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.denied-container[data-theme="light"] .denied-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+}
+
+.denied-container[data-theme="dark"] .denied-card {
+    background: rgba(30, 32, 44, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+}
+
+/* 5. Typography & Accents */
+.denied-icon {
+    font-size: 4.5rem;
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+.display-5 {
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(to bottom, #444, #000);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.denied-container[data-theme="dark"] .display-5 {
+    background: linear-gradient(to bottom, #fff, #888);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text-muted {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+/* 6. Button Styling Overrides */
+.btn-primary {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
+    border: none !important;
+    padding: 12px 24px !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3) !important;
+    transition: transform 0.2s ease !important;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4) !important;
+}
+
+.btn-outline-secondary {
+    border-radius: 12px !important;
+    padding: 12px 24px !important;
+    border-width: 2px !important;
+}
+
+hr {
+    opacity: 0.1;
+    margin: 2rem 0;
+}
