@@ -70,6 +70,7 @@ _Authentication
 5\. Results are returned back to the UI
 
 ## How To Run It
+- # If you do not have migration file in Foodshop.Data then
 - # When Inside file go to tool -> nu-package cmd
 - Run:  Add-Migration InitialCreate
         Update-Database
