@@ -13,11 +13,17 @@ namespace FoodShop.Data
         public int SellerID { get; set; }
         public Employee? Seller { get; set; }
 
+        public int? DeliveryID { get; set; }
+        public Employee? Delivery { get; set; }
+
         public int CustomerID { get; set; }
         public Customer? Customer { get; set; }
 
         public InvoiceStatus? Status { get; set; } = InvoiceStatus.Pending;
         public decimal TotalAmount { get; set; }
+        public decimal TotalFee { get; set; }
+        public string PaymentMethod { get; set; } = "COD";
+        public string PaymentImage { get; set; } = "";
 
         public List<Invoice_Details> InvoiceDetails { get; set; } = new List<Invoice_Details>();
 
@@ -26,6 +32,9 @@ namespace FoodShop.Data
     public enum InvoiceStatus
     {
         Pending,
-        Completed
+        On_Deliverd,
+        In_Process,
+        Completed,
+        Cancel
     }
 }

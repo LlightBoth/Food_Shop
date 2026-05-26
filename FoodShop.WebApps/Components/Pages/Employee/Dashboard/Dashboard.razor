@@ -4,131 +4,169 @@
 
 @using FoodShop.WebApps.Services;
 @inject ChartServices chartServices
-
+@inject FoodShopDbContext db
+@inject NavigationManager Navigation
 
 <PageTitle>Dashboard</PageTitle>
 <link href="/css/employee/dashboard.css" rel="stylesheet" />
 
-<div class="info-wrapper">
-    <header class="info-header d-flex flex-wrap gap-3 justify-content-between p-4">
-        <div class="record revenue-record flex-fill">
-            <div class="record-content">
-                <i class="fas fa-chart-line"></i>
-                <div class="details">
-                    <span class="label">Revenue</span>
-                    <h3 class="value">$42,500</h3>
+<div class="container-fluid py-4">
+    <!-- Stat Cards Section -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm bg-primary text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="rounded-circle bg-white bg-opacity-25 p-3 me-3">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title mb-1 text-white-50">Total Revenue</h6>
+                        <h3 class="mb-0 fw-bold">$42,500</h3>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="record customer-record flex-fill">
-            <div class="record-content">
-                <i class="fas fa-users"></i>
-                <div class="details">
-                    <span class="label">Customers</span>
-                    <h3 class="value">1,284</h3>
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm bg-success text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="rounded-circle bg-white bg-opacity-25 p-3 me-3">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title mb-1 text-white-50">Total Customers</h6>
+                        <h3 class="mb-0 fw-bold">1,284</h3>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="record orders-record flex-fill">
-            <div class="record-content">
-                <i class="fas fa-shopping-cart"></i>
-                <div class="details">
-                    <span class="label">Orders</span>
-                    <h3 class="value">856</h3>
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm bg-info text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="rounded-circle bg-white bg-opacity-25 p-3 me-3">
+                        <i class="fas fa-shopping-cart fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title mb-1 text-white-50">Active Orders</h6>
+                        <h3 class="mb-0 fw-bold">856</h3>
+                    </div>
                 </div>
             </div>
         </div>
-    </header>
+    </div>
 
-    <section class="info-chart">
-	    <div class="chart daily-profit">
-            <canvas id="paymentChart" ></canvas>
-        </div>
-	    <div class="chart top-food">
-            <canvas id="categoryChart"></canvas>
-        </div>
-    </section>
-
-    <section class="info-status">
-        <div class="status-header">
-            <div>Invoice</div>
-            <div>Name</div>
-            <div>Category</div>
-            <div>Qty</div>
-            <div>Price</div>
-            <div>Status</div>
-        </div>
-
-        @foreach(var s in status)
-        {
-            <div class="status-wrapper">
-                <div class="user-invoice">@s["invoiceID"]</div>
-                <div class="user-name">@s["Name"]</div>
-                <div class="user-category">@s["Category"]</div>
-                <div class="user-qty">@s["Qty"]</div>
-                <div class="user-price">$@s["Price"]</div>
-                <div class="user-status">@s["Status"]</div>
+    <!-- Charts Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header py-3">
+                    <h5 class="mb-0">Revenue Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="paymentChart" style="min-height: 300px;"></canvas>
+                </div>
             </div>
-        
-        }
-    </section>
+        </div>
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header py-3">
+                    <h5 class="mb-0">Food Categories</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" style="min-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoices Table Section -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white text-dark py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Recent Invoices</h5>
+            <span class="badge bg-secondary">Total: @invoices.Count</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light text-muted">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Customer Name</th>
+                            <th>Items</th>
+                            <th>Total Price</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in invoices)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-medium text-primary">#@s.InvoiceID</td>
+                                <td>@s.Customer?.CustomerName</td>
+                                <td>@s.InvoiceDetails?.Count()</td>
+                                <td class="fw-bold">$@s.TotalAmount.ToString("F2")</td>
+                                <td>
+                                    <span class="badge rounded-pill @GetStatusClass(s.Status ?? InvoiceStatus.Pending)">
+                                        @s.Status
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-dark" @onclick="@(() => ViewOrder(s.InvoiceID))">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        
+                                        @if (s.Status == InvoiceStatus.Pending)
+                                        {
+                                            <button class="btn btn-success" @onclick="@(() => AcceptOrder(s.InvoiceID))">
+                                                <i class="fas fa-check"></i> Accept
+                                            </button>
+                                        }
+                                        else if (s.Status != InvoiceStatus.Cancel)
+                                        {
+                                            <button class="btn btn-outline-danger" @onclick="@(() => CancelOrder(s.InvoiceID))">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
-    List<Dictionary<string, object>> status = new()
+    private List<Invoices> invoices { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        new Dictionary<string, object>
-        {
-            { "userId", 1 },
-            { "Name", "Ben" },
-            { "invoiceID", 1 },
-            { "Category", "Asian Food" },
-            { "Qty", 2 },
-            { "Price", 8.50 },
-            { "Status", "Pending" },
-        },
-        new Dictionary<string, object>
-        {
-            { "userId", 2 },
-            { "Name", "Anna" },
-            { "invoiceID", 2 },
-            { "Category", "Western Food" },
-            { "Qty", 1 },
-            { "Price", 12.00 },
-            { "Status", "Pending" },
-        },
-        new Dictionary<string, object>
-        {
-            { "userId", 3 },
-            { "Name", "David" },
-            { "invoiceID", 3 },
-            { "Category", "Dessert" },
-            { "Qty", 3 },
-            { "Price", 4.75 },
-            { "Status", "Completed" },
-        },
-        new Dictionary<string, object>
-        {
-            { "userId", 4 },
-            { "Name", "Sophia" },
-            { "invoiceID", 4 },
-            { "Category", "Drinks" },
-            { "Qty", 2 },
-            { "Price", 3.25 },
-            { "Status", "Pending" },
-        },
-        new Dictionary<string, object>
-        {
-            { "userId", 5 },
-            { "Name", "Michael" },
-            { "invoiceID", 5 },
-            { "Category", "Fast Food" },
-            { "Qty", 1 },
-            { "Price", 6.99 },
-            { "Status", "Pending" },
-        }
+        await LoadInvoices();
+    }
+
+    private async Task LoadInvoices()
+    {
+        invoices = await db.Invoices
+            .Include(i => i.Customer)
+            .Include(i => i.InvoiceDetails)
+            .OrderByDescending(i => i.InvoiceID)
+            .ToListAsync();
+    }
+
+    // Dynamic Badge Styling
+    private string GetStatusClass(InvoiceStatus status) => status switch
+    {
+        InvoiceStatus.Pending => "bg-warning text-dark",
+        InvoiceStatus.In_Process => "bg-secondary",
+        InvoiceStatus.On_Deliverd => "bg-primary",
+        InvoiceStatus.Cancel => "bg-danger",
+        InvoiceStatus.Completed => "bg-success",
+        _ => "bg-secondary"
     };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -187,7 +225,33 @@
         await chartServices.RenderChart("paymentChart", paymentConfig);
         await chartServices.RenderChart("categoryChart", categoryConfig);
     }
-}
 
+    // Navigation
+    private void ViewOrder(int id) => Navigation.NavigateTo($"/orderdetail/{id}");
 
+    private async Task AcceptOrder(int ivd_id)
+    {
+        var invoice = await db.Invoices.FirstOrDefaultAsync(i => i.InvoiceID == ivd_id);
+        if (invoice != null)
+        {
+            var current_user = await CurrentUser.GetUserIdAsync();
+
+            invoice.Status = InvoiceStatus.In_Process;
+            invoice.SellerID = (int)current_user;
+            db.Invoices.Update(invoice);
+            await db.SaveChangesAsync();
+            await LoadInvoices(); // Refresh the list
+        }
+    }
+
+    private async Task CancelOrder(int ivd_id)
+    {
+        var invoice = await db.Invoices.FirstOrDefaultAsync(i => i.InvoiceID == ivd_id);
+        if (invoice != null)
+        {
+            invoice.Status = InvoiceStatus.Cancel;
+            await db.SaveChangesAsync();
+            await LoadInvoices();
+        }
+    }
 }

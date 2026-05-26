@@ -4,6 +4,7 @@ using FoodShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodShop.Data.Migrations
 {
     [DbContext(typeof(FoodShopDbContext))]
-    partial class FoodShopDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514130457_AddPaymentImage")]
+    partial class AddPaymentImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -252,9 +255,6 @@ namespace FoodShop.Data.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("FoodID"));
 
-                    b.Property<string>("Calories")
-                        .HasColumnType("longtext");
-
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
@@ -268,12 +268,6 @@ namespace FoodShop.Data.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("FoodName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Ingredients")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PrepTime")
                         .HasColumnType("longtext");
 
                     b.Property<int>("Qty")
@@ -700,21 +694,21 @@ namespace FoodShop.Data.Migrations
                         new
                         {
                             RoleID = 1,
-                            CreatedAt = new DateTime(2026, 5, 24, 6, 2, 4, 868, DateTimeKind.Local).AddTicks(2090),
+                            CreatedAt = new DateTime(2026, 5, 14, 5, 4, 56, 671, DateTimeKind.Local).AddTicks(7804),
                             Descriptions = "System administrator",
                             RoleName = "Admin"
                         },
                         new
                         {
                             RoleID = 2,
-                            CreatedAt = new DateTime(2026, 5, 24, 6, 2, 4, 868, DateTimeKind.Local).AddTicks(2095),
+                            CreatedAt = new DateTime(2026, 5, 14, 5, 4, 56, 671, DateTimeKind.Local).AddTicks(7809),
                             Descriptions = "Manage orders and employees",
                             RoleName = "Manager"
                         },
                         new
                         {
                             RoleID = 3,
-                            CreatedAt = new DateTime(2026, 5, 24, 6, 2, 4, 868, DateTimeKind.Local).AddTicks(2099),
+                            CreatedAt = new DateTime(2026, 5, 14, 5, 4, 56, 671, DateTimeKind.Local).AddTicks(7813),
                             Descriptions = "Limited employee access",
                             RoleName = "Staff"
                         });

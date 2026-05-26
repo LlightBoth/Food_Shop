@@ -1,0 +1,152 @@
+﻿@page "/history/completed"
+@using FoodShop.Data
+@using Microsoft.EntityFrameworkCore
+@inject FoodShopDbContext db
+
+<div class="container py-4">
+    <div class="mb-4">
+        <a href="/menu" class="text-muted text-decoration-none d-inline-flex align-items-center gap-2">
+            <span class="fs-5">&larr;</span> Back to menu
+        </a>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark">
+            <i class="fas fa-history text-success me-2"></i>Order History
+        </h3>
+        <span class="badge rounded-pill bg-success px-3">@filteredInvoices.Count Total Orders</span>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-success" role="status"></div>
+            <p class="mt-2 text-muted">Loading history...</p>
+        </div>
+    }
+    else if (!groupedInvoices.Any())
+    {
+        <div class="card border-0 shadow-sm p-5 text-center">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No completed history found.</h5>
+        </div>
+    }
+    else
+    {
+        @foreach (var group in groupedInvoices)
+        {
+            <div class="mb-4">
+                @* Group Header (Date) *@
+                <div class="d-flex align-items-center mb-2">
+                    <div class="flex-grow-1 hr-label"><hr></div>
+                    <h6 class="mx-3 fw-bold text-muted text-uppercase small">
+                        @(group.Key == DateTime.Today ? "Today" : group.Key.ToString("MMMM dd, yyyy"))
+                    </h6>
+                    <div class="flex-grow-1 hr-label"><hr></div>
+                </div>
+
+                <div class="card border-0 shadow card-glass overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <tbody>
+                                @foreach (var inv in group)
+                                {
+                                    <tr>
+                                        <td class="ps-4" style="width: 150px;">
+                                            <span class="text-primary fw-bold">#@inv.InvoiceID</span>
+                                        </td>
+                                        <td>
+                                            <div class="small text-muted">Time</div>
+                                            <div class="fw-semibold">@inv.InvoiceDate?.ToString("hh:mm tt")</div>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="small text-muted">Amount</div>
+                                            <div class="fw-bold text-dark">@inv.TotalAmount.ToString("C")</div>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <a href="/history/detail/@inv.InvoiceID" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                                                View Details
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    /* Ensure the container inherits the correct theme color */
+    .history-container {
+        color: var(--current-text, #212529);
+    }
+
+    /* Improved glass effect with fallbacks */
+    .card-glass {
+        background-color: var(--current-card, rgba(255, 255, 255, 0.9));
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--current-border, rgba(0, 0, 0, 0.1));
+        transition: transform 0.2s ease;
+    }
+
+    /* Hover effect for better UX */
+    .card-glass:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Fix for horizontal rules in grouping */
+    .hr-label {
+        display: flex;
+        align-items: center;
+        opacity: 0.3;
+    }
+
+    .hr-label hr {
+        width: 100%;
+        margin: 0;
+        border-top: 1px solid var(--current-text, #000);
+    }
+
+    /* Dark mode override if not using variables */
+    [data-theme="dark"] .card-glass {
+        background-color: var(--current-card, #2b2b2b);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+</style>
+
+@code {
+    private List<Invoices> filteredInvoices = new();
+    private IEnumerable<IGrouping<DateTime, Invoices>> groupedInvoices = Enumerable.Empty<IGrouping<DateTime, Invoices>>();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            // 1. Fetch from DB (Ordering by date first)
+            filteredInvoices = await db.Invoices
+                .Where(x => x.Status == InvoiceStatus.Completed)
+                .OrderByDescending(x => x.InvoiceDate)
+                .ToListAsync();
+
+            // 2. Group by Date (ignoring time) in memory
+            groupedInvoices = filteredInvoices
+                .Where(x => x.InvoiceDate.HasValue)
+                .GroupBy(x => x.InvoiceDate.Value.Date);
+        }
+        catch (Exception ex)
+        {
+            // Handle error (logging, etc)
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

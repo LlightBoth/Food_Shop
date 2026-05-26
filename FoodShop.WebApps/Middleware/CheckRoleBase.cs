@@ -49,7 +49,6 @@ namespace FoodShop.WebApps.Middleware
 
             // Get User Role Permission -> Page Allowed or not
             var hasPermission = await CheckRole.GetRolePermission(user_role);
-
             if (!hasPermission)
             {
                 NavManager.NavigateTo("/access-denied");
@@ -59,19 +58,24 @@ namespace FoodShop.WebApps.Middleware
             foreach (var role in UserSession.RolePermissionPage) { Console.Write($"{role.ToString()}, "); }
 
             // Check Current URI, If Allowed In Or Not
-            var currentPage = NavManager.ToBaseRelativePath(NavManager.Uri).ToLower();
+            var currentPage = NavManager.ToBaseRelativePath(NavManager.Uri)
+                                        .Split('/', StringSplitOptions.RemoveEmptyEntries)
+                                        .FirstOrDefault()?.ToLower() ?? "";
 
-            if (UserSession.RolePermissionPage == null || !UserSession.RolePermissionPage.Any(p => p.ToLower() == currentPage))
+            if (UserSession.RolePermissionPage == null ||!UserSession.RolePermissionPage.Any(p => p.ToLower() == currentPage))
             {
                 NavManager.NavigateTo("/access-denied");
                 return;
             }
 
+            // Saved previous page
+            UserSession.PreviousURI = currentPage;
+
             Console.WriteLine($"{NavManager.Uri}");
 
             IsAuthorize = true;
 
-            StateHasChanged(); // 🔥 important
+            StateHasChanged(); // important for render refresh ui
         }
     }
 }

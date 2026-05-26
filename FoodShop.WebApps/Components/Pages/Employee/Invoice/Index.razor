@@ -26,6 +26,7 @@
 				<th>Buyer</th>
 				<th>Seller</th>
 				<th>Total</th>
+				<th>Status</th>
 				<th>Action</th>
 			</tr>
 		</thead>
@@ -35,9 +36,10 @@
 				<tr>
 					<td>@i.InvoiceID</td>
 					<td>@i.InvoiceDate</td>
-					<td>@i.Customer</td>
-					<td>@i.Seller</td>
-					<td>@i.TotalAmount</td>
+					<td>@i.Customer?.CustomerName</td>
+					<td>@i.Seller?.EmployeeName</td>
+					<td>$@i.TotalAmount.ToString("F2")</td>
+					<td>@i.Status</td>
 					<td>
 						<button @onclick="() => ViewInvoice(i.InvoiceID)">Edit</button>
 						<button @onclick="() => DeleteInvoice(i.InvoiceID)">Delete</button>

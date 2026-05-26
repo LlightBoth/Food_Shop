@@ -4,6 +4,8 @@
 
 @inject IJSRuntime JS
 @inject CurrentUser CurrentUser
+@inject UserSession  UserSession
+@inject NavigationManager NavManager
 
 <link href="/css/employee/empLayout.css" rel="stylesheet" />
 <link href="/css/layout/app.css" rel="stylesheet" />
@@ -11,22 +13,50 @@
 
 <div class="emp-container" data-theme="@mode">
 
-    <header class="emp-header">
-        <a href="/emp"> @username </a>
-        <a href="/logout">Log-out</a>
+    <header class="emp-header d-flex align-items-center justify-content-between p-3">
+        <a href="/profile/@userId" class="text-decoration-none">@username</a>
+        <!-- Bootstrap Dropdown Container -->
+        <div class="dropdown">
+            <!-- Toggle Button -->
+            <button class="dropdown-toggle"
+                    type="button"
+                    @onclick="ToggleDropdown">
+               Setting ⚙️
+            </button>
+
+            <!-- Dropdown Menu (Bootstrap classes handle the styling, Blazor handles the visibility) -->
+            <ul class="dropdown-menu dropdown-menu-end @(isDropdownOpen ? "show" : "")">
+                <li>
+                    <button class="dropdown-item" type="button" @onclick="MyProfile">
+                        Profile
+                    </button>
+                </li>
+                <li>
+                    <button class="dropdown-item" type="button" @onclick="IsLogout">
+                        Log-out
+                    </button>
+                </li>
+            </ul>
+        </div>
     </header>
 
     <aside class="emp-aside">
         <nav class="emp-nav">
             <a href="/dashboard">Dashboard</a>
+            <a href="/delivery_dashboard">Delivery</a>
             <a href="/category">Category</a>
             <a href="/food">Food</a>
+            <a href="/invoice">Invoice</a>
             <a href="/customer">Customer</a>
             <a href="/employee">Employee</a>
             <a href="/job">Job</a>
             <a href="/role">Role</a>
             <a href="/page">Page</a>
             <a href="/">Food-Shop</a>
+            @* @foreach (var page in UserSession.RolePermissionPage)
+            {
+                <a href="@($"{@page}")">"@($"{@page}")"</a>
+            } *@
         </nav>
     </aside>
 
@@ -52,18 +82,22 @@
 </div>
 
 @code {
-    private string username = "Emp";
-    private string mode = "light";
+    private string username { get; set; } = "Emp";
+    private int userId { get; set; }
+    private string mode { get; set; } = "light";
+    private bool isDropdownOpen = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
         var session = await CurrentUser.GetUserUsernameAsync();
+        var sessionId = await CurrentUser.GetUserIdAsync();
 
         if (session != null)
         {
             username = session;
+            userId = (int)sessionId;
             StateHasChanged();
         }
     }
@@ -72,5 +106,22 @@
     {
         mode = newMode;
         await JS.InvokeVoidAsync("setTheme", mode);
+    }
+
+    private void ToggleDropdown()
+    {
+        isDropdownOpen = !isDropdownOpen;
+    }
+
+    private async Task MyProfile()
+    {
+        isDropdownOpen = false; // Close menu after click
+        NavManager.NavigateTo($"/profile/{userId}");
+    }
+    private async Task IsLogout()
+    {
+        isDropdownOpen = false; // Close menu after click
+        await CurrentUser.ClearUserSession();
+        NavManager.NavigateTo("/login");
     }
 }

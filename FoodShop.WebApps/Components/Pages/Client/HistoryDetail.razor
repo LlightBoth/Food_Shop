@@ -1,0 +1,246 @@
+﻿@page "/history/detail/{InvoiceId:int}"
+@using FoodShop.Data
+@using Microsoft.EntityFrameworkCore
+@inject FoodShopDbContext db
+@inject NavigationManager navigation
+
+<div class="container py-4">
+    <!-- Header & Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <div>
+            <button class="btn btn-link text-decoration-none p-0 mb-1" @onclick='() => navigation.NavigateTo("/history/completed")'>
+                <i class="fas fa-arrow-left"></i> Back to History
+            </button>
+            <h3 class="fw-bold mb-0">Invoice Detail</h3>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-outline-secondary" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>Print Receipt
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Fetching order archives...</p>
+        </div>
+    }
+    else if (invoice == null)
+    {
+        <div class="alert alert-warning border-0 shadow-sm">
+            <i class="fas fa-exclamation-triangle me-2"></i> Order record not found.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- Left: Items Summary -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <span class="badge bg-success-soft text-success mb-2">COMPLETED</span>
+                                <h4 class="fw-bold">Order #@invoice.InvoiceID</h4>
+                                <p class="text-muted mb-0">Date: @invoice.InvoiceDate?.ToString("MMMM dd, yyyy / hh:mm tt")</p>
+                            </div>
+                            <div class="text-end">
+                                <h4 class="fw-bold text-primary">@invoice.TotalAmount.ToString("C")</h4>
+                                <span class="small text-muted text-uppercase">Total Paid</span>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="border-0">Item Description</th>
+                                        <th class="border-0 text-center">Qty</th>
+                                        <th class="border-0 text-end">Unit Price</th>
+                                        <th class="border-0 text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in invoice.InvoiceDetails)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <!-- Food Image -->
+                                                    <div class="food-image-wrapper me-3">
+                                                        <img src="/upload/product/@(string.IsNullOrEmpty(item.Foods?.FoodImageID) ? "placeholder.png" : item.Foods?.FoodImageID)"
+                                                             alt="@item.Foods?.FoodName"
+                                                             class="rounded shadow-sm"
+                                                             loading="lazy" />
+                                                    </div>
+
+                                                    <!-- Food Info -->
+                                                    <div>
+                                                        <div class="fw-bold">@item.Foods?.FoodName</div>
+                                                        <div class="small text-muted text-truncate" style="max-width: 250px;">
+                                                            @item.Foods?.Description
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">@item.Qty</td>
+                                            <td class="text-end text-success">@item.Foods?.SellPrice.ToString("C")</td>
+                                            <td class="text-end fw-bold text-success">@((item.Qty * (item.Foods?.SellPrice ?? 0)).ToString("C"))</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Delivery & Payment & Customer Info -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-user-circle me-2"></i>Customer Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1 fw-bold">@invoice.Customer?.CustomerName</p>
+                        <p class="mb-3 text-muted small">@invoice.Customer?.Phone</p>
+                        <hr />
+                        <label class="text-muted small text-uppercase fw-bold">Delivery Address</label>
+                        <p class="mb-0 small">@invoice.Customer?.Address</p>
+                    </div>
+                </div>
+                @* Customer Inf *@
+                <div class="card border-0 shadow">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-truck me-2"></i>Fulfillment</h6>
+                    </div>
+                    <div class="card-body">
+
+                        <div class="d-flex align-items-center">
+
+                            <div class="avatar-circle me-3">
+                                <i class="fas fa-user-check text-success"></i>
+                            </div>
+
+                            <div>
+                                <p class="mb-0 small text-muted">Delivered By</p>
+                                <p class="mb-0 fw-bold">Delivery ID: #@invoice.DeliveryID</p>
+                            </div>
+
+                        </div>
+                        <hr />
+                        @* Delivery & Payment *@
+                        <div class="mt-3 d-flex align-items-center">
+
+                            @if (invoice.PaymentMethod != "COD")
+                            {
+                                <div class="food-image-wrapper me-3">
+                                    <img src="/upload/payment/@(string.IsNullOrEmpty(invoice.PaymentImage) ? "placeholder.png" : invoice.PaymentImage)"
+                                         alt="@invoice.PaymentImage"
+                                         class="rounded shadow-sm"
+                                         loading="lazy" />
+                                </div>
+                            }
+
+                            <div>
+                                <p class="mb-0 small text-muted">Payment</p>
+                                <p class="mb-0 fw-bold">Via: @invoice.PaymentMethod</p>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .bg-success-soft {
+        background-color: #e1fcef;
+    }
+
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        background: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .food-image-wrapper {
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0; /* Prevents the image from squishing */
+        overflow: hidden;
+    }
+
+        .food-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures the image fills the square perfectly */
+            background-color: #f8f9fa;
+        }
+
+    /* We hide images when printing to save ink and look cleaner on paper */
+    @@media print {
+        /* Hide the sidebar and top navigation from your Layout */
+        .sidebar, .top-row, nav, header, .nav-menu {
+            display: none !important;
+        }
+
+        /* Ensure the main content takes up the full width */
+        .main, .content, .page {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .food-image-wrapper {
+            display: none !important;
+        }
+
+        .card {
+            border: none !important;
+            shadow: none !important;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public int InvoiceId { get; set; }
+    private Invoices? invoice;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            invoice = await db.Invoices
+                .AsNoTracking()
+                .Include(i => i.Customer)
+                .Include(i => i.InvoiceDetails)
+                    .ThenInclude(d => d.Foods)
+                .FirstOrDefaultAsync(i => i.InvoiceID == InvoiceId);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

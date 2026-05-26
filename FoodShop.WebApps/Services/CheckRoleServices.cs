@@ -32,7 +32,7 @@ namespace FoodShop.WebApps.Services
 
             var permissions = await _db.Role_Permissions
                 .Where(rp => rp.RoleID == roleId)
-                .Select(rp => rp.Pages.PageName) // adjust to your schema
+                .Select(rp => rp.Pages.PageName)
                 .ToListAsync();
 
             _session.RolePermissionPage = permissions;

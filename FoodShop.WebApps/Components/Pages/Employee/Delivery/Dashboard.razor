@@ -1,0 +1,164 @@
+﻿@page "/delivery_dashboard"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@using Microsoft.EntityFrameworkCore
+@using FoodShop.WebApps.Services
+@using FoodShop.Models
+@inject FoodShopDbContext db
+@inject CurrentUser CurrentUser
+@inject NavigationManager Navigation
+
+
+<div class="container py-4">
+    <h4 class="mb-4 fw-bold">Delivery Partner Dashboard</h4>
+
+    <!-- Summary Stats -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-primary text-white p-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-bicycle fs-1 me-3"></i>
+                    <div>
+                        <h6 class="mb-0">Total Completed</h6>
+                        <h2 class="fw-bold mb-0">@completedCount</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-warning text-dark p-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-clock-history fs-1 me-3"></i>
+                    <div>
+                        <h6 class="mb-0">Pending Requests</h6>
+                        <h2 class="fw-bold mb-0">@pendingOrders.Count</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-success text-white p-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-cash-stack fs-1 me-3"></i>
+                    <div>
+                        <h6 class="mb-0">Total Earnings</h6>
+                        <h2 class="fw-bold mb-0">$@(completedCount * 1.25)</h2> @* Example: $1.25 per delivery *@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Management Section -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 d-flex justify-content-between">
+            <h5 class="mb-0 fw-bold text-secondary align-center">New Delivery Requests</h5>
+            <button class="btn btn-outline-secondary" @onclick="GetMyDelivery">My Delivery</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Order ID</th>
+                        <th>Customer</th>
+                        <th>Address</th>
+                        <th>Amount</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!pendingOrders.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-check2-circle fs-2"></i>
+                                <p class="mt-2">No pending orders at the moment. Take a break!</p>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var order in pendingOrders)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold">#@order.InvoiceID</td>
+                                <td>@order.Customer?.CustomerName</td>
+                                <td>
+                                    <small class="text-muted d-block">@order.Customer?.Address</small>
+                                </td>
+                                <td class="fw-bold text-success">$@order.TotalAmount.ToString("F2")</td>
+                                <td class="text-center">
+                                    <button class="btn btn-success btn-sm me-2 px-3" @onclick="() => HandleOrder(order, InvoiceStatus.On_Deliverd)">
+                                        Confirm
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm px-3" @onclick="() => HandleOrder(order, InvoiceStatus.Cancel)">
+                                        Deny
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Invoices> pendingOrders = new();
+    private int completedCount = 0;
+    private int driverId;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var userId = await CurrentUser.GetUserIdAsync();
+            if (userId.HasValue)
+            {
+                driverId = userId.Value;
+                await LoadDashboardData();
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task LoadDashboardData()
+    {
+        // 1. Load orders waiting for a driver (Pending)
+        pendingOrders = await db.Invoices
+            .Include(i => i.Customer)
+            .Where(i => i.Status == InvoiceStatus.In_Process)
+            .OrderByDescending(i => i.InvoiceDate)
+            .ToListAsync();
+
+        // 2. Count deliveries completed by this specific driver
+        completedCount = await db.Invoices
+            .CountAsync(i => i.DeliveryID == driverId && i.Status == InvoiceStatus.Completed);
+    }
+
+    private async Task HandleOrder(Invoices order, InvoiceStatus newStatus)
+    {
+        // Pull a fresh copy from the DB using the ID
+        var dbOrder = await db.Invoices.FindAsync(order.InvoiceID);
+
+        if (dbOrder != null)
+        {
+            dbOrder.Status = newStatus;
+
+            if (newStatus == InvoiceStatus.On_Deliverd)
+            {
+                dbOrder.DeliveryID = driverId;
+            }
+            db.Invoices.Update(dbOrder);
+            await db.SaveChangesAsync();
+            await LoadDashboardData();
+            StateHasChanged();
+        }
+    }
+
+    private void GetMyDelivery()
+    {
+        Navigation.NavigateTo("/delivery_mydelivery");
+    }
+}

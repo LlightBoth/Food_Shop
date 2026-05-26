@@ -39,6 +39,20 @@
             <InputNumber class="form-control" @bind-Value="Model.TotalAmount" />
         </div>
 
+        <div>
+            <label>Status</label>
+            <InputSelect class="form-control" @bind-Value="Model.Status">
+
+                <option value="">-- Select Status --</option>
+
+                @foreach (var status in Enum.GetValues(typeof(InvoiceStatus)))
+                {
+                    <option value="@status">@status</option>
+                }
+
+            </InputSelect>
+        </div>
+
 
         <button class="btn" type="submit">
             @ButtonText
@@ -56,6 +70,7 @@
     // List Dropdown choosage
     [Parameter] public List<Customer> customers { get; set; } = new();
     [Parameter] public List<Employee> sellers { get; set; } = new();
+    [Parameter] public List<Invoices> invoices { get; set; } = new();
 
 
 

@@ -40,6 +40,22 @@
             <InputNumber class="form-control" @bind-Value="Model.SellPrice" />
         </div>
 
+
+        <div>
+            <label>Ingredient</label>
+            <InputText class="form-control" @bind-Value="Model.Ingredients" />
+        </div>
+
+        <div>
+            <label>Calories</label>
+            <InputText class="form-control" @bind-Value="Model.Calories" />
+        </div>
+
+        <div>
+            <label>PrepTime</label>
+            <InputText class="form-control" @bind-Value="Model.PrepTime" />
+        </div>
+
         <div>
             <label>Description</label>
             <InputTextArea class="form-control" @bind-Value="Model.Description" />
@@ -52,7 +68,7 @@
         @if (!string.IsNullOrEmpty(Model.FoodImageID))
         {
             <div class="mt-2">
-                <img src="upload/@Model.FoodImageID" style="max-width:200px; border-radius: 8px;" />
+                <img src="upload/product/@Model.FoodImageID" style="max-width:200px; border-radius: 8px;" />
             </div>
         }
 
@@ -84,7 +100,7 @@
                 return;
             }
 
-            var uploadFolder = Path.Combine(Environment.WebRootPath, "upload");
+            var uploadFolder = Path.Combine(Environment.WebRootPath, "upload/product");
             if (!Directory.Exists(uploadFolder))
                 Directory.CreateDirectory(uploadFolder);
 

@@ -20,6 +20,9 @@ namespace FoodShop.Data
         public int Qty { get; set; }
         public decimal SellPrice { get; set; }
         public string? Description { get; set; }
+        public string? Ingredients { get; set; }
+        public string? Calories { get; set; }
+        public string? PrepTime { get; set; }
 
         public DateTime? CreatedAt { get; set; } = DateTime.Now;
 

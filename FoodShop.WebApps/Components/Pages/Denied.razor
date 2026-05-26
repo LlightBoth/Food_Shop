@@ -2,6 +2,10 @@
 @page "/access-denied"
 @inject NavigationManager NavManager
 
+@using FoodShop.WebApps.Services
+
+@inject UserSession UserSession
+
 
 
 <div class="denied-container" data-theme="@mode">
@@ -44,5 +48,5 @@
 
     private void GoHome() => NavManager.NavigateTo("/");
 
-    private void GoBack() => NavManager.NavigateTo("javascript:history.back()");
+    private void GoBack() => NavManager.NavigateTo(UserSession.PreviousURI);
 }

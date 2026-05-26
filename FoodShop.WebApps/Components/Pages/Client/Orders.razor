@@ -1,0 +1,224 @@
+﻿@page "/orders"
+
+@using Microsoft.EntityFrameworkCore
+@using FoodShop.WebApps.Services
+@using FoodShop.Models
+
+@inject CurrentUser CurrentUser
+@inject FoodShopDbContext db
+@inject NavigationManager Navigation
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <h2 class="fw-bold text-primary">
+            <i class="bi bi-cart3 me-2"></i>Your Shopping Status
+        </h2>
+
+        @if (invoice_Details.Any())
+        {
+            <button class="btn btn-outline-danger btn-sm" @onclick="ClearCart">
+                <i class="bi bi-trash me-1"></i>Clear All Orders
+            </button>
+        }
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span class="ms-3 pt-1">Loading your delicious items...</span>
+        </div>
+    }
+    else if (!invoice_Details.Any())
+    {
+        <div class="card shadow-sm border-0 text-center p-5">
+            <div class="card-body">
+                <i class="bi bi-bag-x display-1 text-muted"></i>
+                <p class="mt-3 fs-4 text-secondary">Your cart is empty!</p>
+                <a href="/menu" class="btn btn-primary btn-lg px-4 mt-2">
+                    Back to Menu
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Product</th>
+                            <th>Price</th>
+                            <th class="text-center">Quantity</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in invoice_Details)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <img src="/upload/product/@(string.IsNullOrEmpty(item.Foods?.FoodImageID) ? "placeholder.png" : item.Foods?.FoodImageID)"
+                                             alt="@item.Foods?.FoodName"
+                                             class="rounded shadow-sm me-3"
+                                             style="width: 60px; height: 60px; object-fit: cover;" />
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">@item.Foods?.FoodName</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-secondary">
+                                    $@item.Foods?.SellPrice.ToString("F2")</td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border px-3 py-2">@item.Qty</span>
+                                </td>
+                                <td class="fw-bold text-dark">
+                                    $@((item.Price * item.Qty).ToString("F2"))
+                                </td>
+                                <td>
+                                    @{
+                                        var isPending = invoices?.Status.Equals(InvoiceStatus.Pending) ?? false;
+                                        var badgeClass = isPending ? "bg-warning text-dark" : "bg-info";
+                                    }
+
+                                    <span class="badge rounded-pill @badgeClass">
+                                        @invoices?.Status
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    @if (item.Invoices?.Status == InvoiceStatus.Pending)
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger px-2 py-1" @onclick="() => Remove(item)">
+                                            <i class="bi bi-x-circle me-1"></i>Cancel
+                                        </button>
+                                    }
+                                    else if (item.Invoices?.Status == InvoiceStatus.Completed)
+                                    {
+                                        <button class="btn btn-sm btn-success px-2 py-1" @onclick="LoadCart">
+                                            <i class="bi bi-check-all me-1"></i>Clear View
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-outline-secondary px-2 py-1" disabled>
+                                            <i class="bi bi-truck me-1"></i>On The Way
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mt-4 align-items-center">
+            <div class="col-md-6">
+                <a href="/menu" class="btn btn-link text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Continue Shopping
+                </a>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="card border-0 bg-light p-3 shadow-sm d-inline-block" style="min-width: 250px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted me-3">Grand Total:</span>
+                        <h3 class="mb-0 text-success fw-bold">$@invoices?.TotalAmount.ToString("F2")</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private Invoices invoices { get; set; }
+    private List<Invoice_Details> invoice_Details = new();
+    private bool isLoading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadCart();
+            // Since data loaded after the first paint, we must trigger a refresh
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadCart()
+    {
+        isLoading = true;
+        var userId = await CurrentUser.GetUserIdAsync();
+
+        if (userId.HasValue)
+        {
+            // We only want the active order.
+            // If the latest order is "Completed", this will return null,
+            // which correctly shows the "Empty Cart" UI.
+            invoices = await db.Invoices
+                .Where(i => i.CustomerID == userId.Value && i.Status != InvoiceStatus.Completed)
+                .OrderByDescending(i => i.InvoiceDate)
+                .FirstOrDefaultAsync();
+
+            if (invoices != null)
+            {
+                invoice_Details = await db.InvoiceDetails
+                    .Include(i => i.Foods)
+                    .Where(i => i.InvoiceID == invoices.InvoiceID)
+                    .ToListAsync();
+            }
+            else
+            {
+                // Crucial: Clear the list if no active invoice is found
+                invoice_Details.Clear();
+            }
+        }
+
+        isLoading = false;
+    }
+
+    private async Task Remove(Invoice_Details item)
+    {
+        db.InvoiceDetails.Remove(item);
+
+        // Check to deduct Total amount from invoice
+        if (invoices != null)
+        {
+            invoices.TotalAmount -= (item.Price * item.Qty);
+            db.Invoices.Update(invoices);
+        }
+        await db.SaveChangesAsync();
+        invoice_Details.Remove(item);
+        // Manual UI refresh to ensure the page updates
+        StateHasChanged();
+    }
+
+    private async Task ClearCart()
+    {
+        if (invoice_Details.Any())
+        {
+            // This physically deletes the records.
+            // Use this only for "Pending" carts
+            // db.InvoiceDetails.RemoveRange(invoice_Details);
+
+            // if (invoices != null)
+            // {
+            //     db.Invoices.Remove(invoices);
+            // }
+
+            // await db.SaveChangesAsync();
+
+            // Reset local state to trigger the "Empty Cart" UI
+            invoice_Details.Clear();
+            invoices = null;
+
+            StateHasChanged();
+        }
+    }
+}

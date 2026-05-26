@@ -8,12 +8,16 @@
 @inject CurrentUser user
 @inject FoodShopDbContext db
 @inject NavigationManager navigation
+@inject IWebHostEnvironment Environment
 
 <link rel="stylesheet" href="/css/client/cart.css" />
 
 <div class="page-header">
     <h3>Your Shopping Cart</h3>
-    <button class="btn-clear" @onclick="async () => await ClearCart()">Clear Cart</button>
+    <div class="btn-action">
+        <button class="btn-history" @onclick="async () => HistoryPurchase()">History</button>
+        <button class="btn-clear" @onclick="async () => await ClearCart()">Clear Cart</button>
+    </div>
 </div>
 
 <div class="cart-container">
@@ -50,11 +54,11 @@
                                     @* FIX: Use item.ImagePath directly *@
                                     @if (!string.IsNullOrEmpty(item.ImagePath))
                                     {
-                                        <img src="/upload/@item.ImagePath" alt="@item.FoodName" class="cart-img" />
+                                        <img src="/upload/product/@item.ImagePath" alt="@item.FoodName" class="cart-img" />
                                     }
                                     else
                                     {
-                                        <img src="upload/placeholder.png" alt="No Image" class="cart-img" />
+                                        <img src="/upload/placeholder.png" alt="No Image" class="cart-img" />
                                     }
                                     <div class="cart-details">
                                         @* FIX: Use item.FoodName directly *@
@@ -148,6 +152,24 @@
                 <span>Free</span>
             </div>
             <hr />
+
+            <!-- Proof of Purchase Section -->
+            @if (selectedPayment == "QR" || selectedPayment == "Transfer")
+            {
+                <div class="mt-3 proof-upload">
+                    <label class="form-label small fw-bold text-muted">-- Invoice Purchase (Image) --</label>
+                    <div class="input-group">
+                        <InputFile OnChange="HandleFileSelected" class="form-control form-control-sm" accept="image/*" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(uploadStatus))
+                    {
+                        <div class="small mt-1 text-success">
+                            <i class="fas fa-check-circle"></i> @uploadStatus
+                        </div>
+                    }
+                </div>         
+            }
+
             <div class="summary-row total">
                 <span>Total</span>
                 <span>$@Total.ToString("F2")</span>
@@ -171,9 +193,9 @@
     private string selectedPayment { get; set; }
 
     // ✅ Billing fields
-    private string customerName;
-    private string phone;
-    private string address;
+    private string customerName { get; set; }
+    private string phone { get; set; }
+    private string address { get; set; }
 
     private string errorMessage;
 
@@ -181,6 +203,9 @@
 
     private decimal Subtotal => CartSvc.Items?.Sum(x => x.TotalPrice) ?? 0;
     private decimal Total => Subtotal;
+
+    private string? uploadStatus ;
+    private IBrowserFile? selectedFile;
 
 
 
@@ -190,11 +215,14 @@
 
     protected override void OnInitialized()
     {
-        // Change State UI
+        // Subscribe to changes
         CartSvc.OnChange += StateHasChanged;
 
-        // ✅ default payment
-        selectedPayment =  paymentMethod.PaymentMethod.First();
+        //  Ensure paymentMethod list is not empty before calling .First()
+        if (paymentMethod?.PaymentMethod != null && paymentMethod.PaymentMethod.Any())
+        {
+            selectedPayment = paymentMethod.PaymentMethod.First();
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -204,11 +232,77 @@
             // Load user session
             await user.LoadUserSession();
 
+            // Now it's safe to use JS-based services
+            int? customer_id = await user.GetUserIdAsync();
+
+            if (customer_id.HasValue)
+            {
+                var customer = await db.Customers
+                    .FirstOrDefaultAsync(c => c.CustomerID == customer_id.Value);
+
+                if (customer != null)
+                {
+                    customerName = customer.CustomerName;
+                    phone = customer.Phone;
+                    address = customer.Address;
+
+                    // Because we are in OnAfterRender, we must tell Blazor to refresh the UI
+                    StateHasChanged();
+                }
+            }
+
             await CartSvc.LoadCart();
             StateHasChanged();
         }
     }
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
 
+        if (selectedFile != null)
+        {
+            // Validation: Max size 5MB
+            if (selectedFile.Size > 5 * 1024 * 1024)
+            {
+                uploadStatus = "Image too large (Max 5MB)";
+                selectedFile = null;
+                return;
+            }
+
+            uploadStatus = $"File '{selectedFile.Name}' selected.";
+
+            // Get file Info
+            var extension_filename = Path.GetExtension(selectedFile.Name);
+            // Only allow specific image for security purpose                
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            if (!allowedExtensions.Contains(extension_filename.ToLower()))
+            {
+                uploadStatus = "Image not known";
+                selectedFile = null;
+                return;
+            }
+
+            // Find directory to store image
+            var uploadFolder = Path.Combine(Environment.WebRootPath, "upload/payment");
+            if (!Directory.Exists(uploadFolder))
+                Directory.CreateDirectory(uploadFolder);
+
+            // Filename stored
+            var uniqueFileName = Guid.NewGuid().ToString() + extension_filename;
+            var path = Path.Combine(uploadFolder, uniqueFileName);
+
+            using var stream = new FileStream(path, FileMode.Create);
+            await selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5).CopyToAsync(stream);
+
+            // Save the image name
+            invoices.PaymentImage = uniqueFileName;
+        }
+    }
+
+    private void HistoryPurchase()
+    {
+        navigation.NavigateTo("/history/completed");
+    }
     private async Task Increase(CartItem item)
     {
         item.Quantity++;
@@ -255,7 +349,9 @@
         {
             SellerID = 2,
             CustomerID = user.Session.UserId.Value,
-            TotalAmount = Total
+            TotalAmount = Total,
+            PaymentMethod = selectedPayment,
+            PaymentImage = invoices.PaymentImage
         };
         await db.Invoices.AddAsync(invoice);
         await db.SaveChangesAsync(); // Save first to get InvoiceID
@@ -303,6 +399,12 @@
             string.IsNullOrWhiteSpace(phone) ||
             string.IsNullOrWhiteSpace(address))
             return false;
+
+        // Cash On Delivery do not need to send file proof image purchase
+        if (selectedPayment == "COD") return true;
+
+        // proof image purchased
+        if (selectedFile == null) return false;
 
         return true;
     }

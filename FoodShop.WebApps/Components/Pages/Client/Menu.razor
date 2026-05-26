@@ -29,7 +29,7 @@
         {
             <div class="food-card" @onclick='() => NavManager.NavigateTo($"/food-details/{food.FoodID}")'>
                 <div class="food-image-wrapper">
-                    <img src="/upload/@(string.IsNullOrEmpty(food.FoodImageID) ? "placeholder.png" : food.FoodImageID)"
+                    <img src="/upload/product/@(string.IsNullOrEmpty(food.FoodImageID) ? "placeholder.png" : food.FoodImageID)"
                          alt="@food.FoodName"
                          loading="lazy" />
                 </div>
@@ -40,7 +40,7 @@
                         <span class="rating-badge">⭐ 4.5</span>
                     </div>
 
-                    <p class="category-text">@food.FoodCategory?.CategoryName</p>
+                    <p class="category-text">@food.Description</p>
 
                     <div class="food-footer">
                         <p class="amount">$@food.SellPrice.ToString("F2")</p>

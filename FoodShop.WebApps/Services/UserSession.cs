@@ -4,8 +4,8 @@
     {
         public int? UserId { get; set; } = null;
         public string UserName { get; set; } = "";
-        public string PreviousURI { get; set; } = "";
+        public string PreviousURI { get; set; } = "http://localhost:5149";
         public bool IsEmployee { get; set; } = false;
-        public List<String>? RolePermissionPage { get; set; } = null; // optional
+        public List<String>? RolePermissionPage { get; set; } = null; 
     }
 }

@@ -51,6 +51,7 @@ namespace FoodShop.WebApps.Services
             return Session.IsEmployee ? "/dashboard" : "/";
         }
 
+
         // Return User From LocalStorage
         public async Task<int?> GetUserIdAsync()
         {

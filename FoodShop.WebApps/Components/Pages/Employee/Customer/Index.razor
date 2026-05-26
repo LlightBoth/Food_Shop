@@ -39,7 +39,7 @@
 					<td>@c.Status</td>
 					<td>@c.CreatedAt?.ToString("yyyy-MM-dd")</td>
 					<td>
-						<button @onclick="() => ViewCustomer(c.CustomerID)">Create</button>
+						<button @onclick="() => ViewCustomer(c.CustomerID)">Edit</button>
 						<button @onclick="() => DeleteCustomer(c.CustomerID)">Delete</button>
 					</td>
 				</tr>

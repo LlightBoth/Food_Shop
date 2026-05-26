@@ -23,5 +23,6 @@ namespace FoodShop.Data
         public DateTime? CreatedAt { get; set; } = DateTime.Now;
 
         public List<Invoices> Invoices { get; set; } = new List<Invoices>();
+        public List<Invoices> DeliveredInvoices { get; set; } = new();
     }
 }

@@ -1,16 +1,153 @@
-﻿@page "/{foodCategory}/{foodID:int}"
+﻿@page "/{FoodCategory}/{FoodId:int}"
+@using FoodShop.WebApps.Services
+@using FoodShop.Data
+@using FoodShop.Models
 
-<PageTitle>Food-Detail</PageTitle>
-<link href="/css/client/foodDetail.css" rel="stylesheet" />
+@inject CartServices CartSv
+@inject NavigationManager NavManager
+@inject FoodShopDbContext db
 
-<h3>Food Detail</h3>
-<p>Category: @foodCategory</p>
-<p>Food ID: @foodID</p>
+<PageTitle>@food.FoodName - Details</PageTitle>
+
+<div class="container my-5">
+    <div class="row g-5">
+        <!-- Left Column: Media Presentation -->
+        <div class="col-md-6">
+            <div class="position-relative rounded-4 overflow-hidden shadow-sm bg-light">
+                <img src="/upload/product/@(string.IsNullOrEmpty(food.FoodImageID) ? "placeholder.png" : food.FoodImageID)"
+                     alt="@food.FoodName"
+                     loading="lazy"
+                     class="img-fluid w-100 object-fit-cover" style="aspect-ratio: 4/3;" />
+
+                <span class="position-absolute top-0 start-0 m-3 badge bg-white text-dark shadow-sm px-3 py-2 text-uppercase fw-bold letter-spacing-1">
+                    @FoodCategory
+                </span>
+            </div>
+        </div>
+
+        <!-- Right Column: Food Information & Inspection -->
+        <div class="col-md-6 d-flex flex-column justify-content-between">
+            <div>
+                <!-- Header Block -->
+                <div class="mb-4">
+                    <small class="text-uppercase text-muted tracking-wider fw-semibold">Item #@FoodId</small>
+                    <h1 class="display-5 fw-bold text-dark mt-1 mb-3">@food.FoodName</h1>
+                    <p class="lead text-secondary">@food.Description</p>
+                </div>
+
+                <!-- Inspect Key Metrics Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded-3 text-center border">
+                            <small class="d-block text-uppercase text-muted fw-bold small-text mb-1">Price</small>
+                            <span class="fs-5 fw-bold text-dark">@food.SellPrice.ToString("C")</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded-3 text-center border">
+                            <small class="d-block text-uppercase text-muted fw-bold small-text mb-1">Calories</small>
+                            <span class="fs-5 fw-bold text-dark">@_calories <span class="fs-6 fw-normal text-muted">kcal</span></span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded-3 text-center border">
+                            <small class="d-block text-uppercase text-muted fw-bold small-text mb-1">Prep Time</small>
+                            <span class="fs-5 fw-bold text-dark">@_prepTime <span class="fs-6 fw-normal text-muted">mins</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ingredients & Category Specifications -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-2">Ingredients & Category</h5>
+                    <p class="text-muted lh-base">@_ingredients</p>
+
+                    <div class="d-flex gap-2 mt-2">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">@food.FoodCategory?.CategoryName</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Action Row -->
+            <div class="d-flex gap-3 align-items-center pt-3 border-top mt-4">
+                <div class="d-flex align-items-center border rounded-3 overflow-hidden bg-white">
+                    <button class="btn btn-link text-dark text-decoration-none px-3 py-2 fw-bold" @onclick="DecreaseQty">&minus;</button>
+                    <span class="px-2 fw-bold text-center" style="min-width: 30px;">@_quantity</span>
+                    <button class="btn btn-link text-dark text-decoration-none px-3 py-2 fw-bold" @onclick="IncreaseQty">&plus;</button>
+                </div>
+
+                <button class="btn btn-danger btn-lg flex-grow-1 fw-bold shadow-sm py-2" @onclick="() => AddToCart(food)">
+                    Add to Order &bull; @((food.SellPrice * _quantity).ToString("C"))
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
-    [Parameter]
-    public int foodID { get; set; }
+    [Parameter] public int FoodId { get; set; }
+    [Parameter] public string FoodCategory { get; set; } = string.Empty;
 
-    [Parameter]
-    public string foodCategory { get; set; }
+    private Foods food = new();
+    public string _ingredients { get; set; } = "Premium beef patty, cheddar cheese, fresh lettuce, sliced tomatoes, pickles, and signature house sauce.";
+    public string _prepTime { get; set; } = "12";
+    public string _calories { get; set; } = "150";
+    public int _quantity = 1;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate background data fetch based on current FoodId context
+        await Task.Delay(150);
+
+        // Load foods with category
+        food = await db.Foods.Include(f => f.FoodCategory).FirstOrDefaultAsync(f => f.FoodID == FoodId);
+        if (food == null)
+        {
+            NavManager.NavigateTo("/");
+            return ;
+        }
+        if (food.Ingredients != null && food.PrepTime != null)
+        {
+            _ingredients = food.Ingredients;
+            _prepTime = food.PrepTime;
+            _calories = food.Calories;           
+        } 
+    }
+
+    private async Task AddToCart(Foods food)
+    {
+        if (food == null) return;
+
+        await CartSv.AddToCart(
+            food.FoodID,
+            food.FoodName,
+            string.IsNullOrEmpty(food.FoodImageID) ? "placeholder.png" : food.FoodImageID,
+            food.SellPrice,
+            _quantity
+        );
+
+        _quantity = 1;
+    }
+
+    
+
+    private void IncreaseQty() => _quantity++;
+    private void DecreaseQty() { if (_quantity > 1) _quantity--; }
 }
+
+<style>
+/* Custom subtle micro-tweaks to supplement Bootstrap rules */
+.letter-spacing-1 {
+    letter-spacing: 0.5px;
+}
+.tracking-wider {
+    letter-spacing: 1px;
+}
+.small-text {
+    font-size: 0.75rem;
+}
+.object-fit-cover {
+    object-fit: cover;
+}
+</style>

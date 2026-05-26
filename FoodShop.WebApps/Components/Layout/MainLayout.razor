@@ -3,6 +3,7 @@
 @using FoodShop.WebApps.Services
 @inject CartServices CartSvc
 @inject CurrentUser user
+@inject NavigationManager NavManager
 @inject IJSRuntime JS
 
 @implements IDisposable
@@ -32,12 +33,43 @@
 
                 @if (user.IsLoggedIn)
                 {
+                    <!-- Bootstrap Dropdown Container -->
+                    <div class="dropdown">
+                        <!-- Toggle Button -->
+                        <button class="btn btn-outline-primary btn-light dropdown-toggle"
+                                type="button"
+                                @onclick="ToggleDropdown">
+                            Setting ⚙️
+                        </button>
+
+                        <!-- Dropdown Menu (Bootstrap classes handle the styling, Blazor handles the visibility) -->
+                        <ul class="dropdown-menu dropdown-menu-end @(isDropdownOpen ? "show" : "")">
+                            <li>
+                                <button class="dropdown-item" type="button" @onclick="MyProfile">
+                                    Profile
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" type="button" @onclick="MyOrders">
+                                    My Orders
+                                </button>
+                            </li>
+                            @if (user.Session.IsEmployee)
+                            {
+                                <li>
+                                    <button class="dropdown-item" type="button" @onclick="MyDashboard">Dashboard</button>
+                                </li>
+                            }
+                            <li>
+                                <button class="dropdown-item" type="button" @onclick="IsLogout">
+                                    Log-out
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
                     <div class="d-flex gap-2 align-items-center">
-                        @if (user.Session.IsEmployee)
-                        {
-                            <NavLink href="/dashboard" class="btn btn-outline-light btn-sm">Dashboard</NavLink>
-                        }
-                        <button class="btn btn-outline-warning text-white fw-bold" @onclick="IsLogout">Logout</button>
+                        
                     </div>
                 }
                 else
@@ -69,7 +101,9 @@
 
 @code {
     private int CartCount => CartSvc.Items.Sum(x => x.Quantity);
+    private int userId { get; set; }
     private string mode = "light";
+    private bool isDropdownOpen = false;
 
     protected override void OnInitialized()
     {
@@ -83,6 +117,14 @@
             await user.LoadUserSession();
             // isn't available until the browser is ready
             await CartSvc.LoadCart();
+
+            var sessionId = await user.GetUserIdAsync();
+
+            if (sessionId != null)
+            {
+                userId = (int)sessionId;
+                StateHasChanged();
+            }
 
             // Tell the ui to refresh 
             StateHasChanged();
@@ -98,7 +140,27 @@
         mode = newMode;
         await JS.InvokeVoidAsync("setTheme", mode);
     }
+    private void ToggleDropdown()
+    {
+        isDropdownOpen = !isDropdownOpen;
+    }
 
+    private async Task MyProfile()
+    {
+        isDropdownOpen = false; // Close menu after click
+        NavManager.NavigateTo($"/customer-profile/{userId}");
+    }
+         
+    private async Task MyOrders()
+    {
+        isDropdownOpen = false; // Close menu after click
+        NavManager.NavigateTo("/orders");
+    }
+    private async Task MyDashboard()
+    {
+        isDropdownOpen = false; // Close menu after click
+        NavManager.NavigateTo($"dashboard");
+    }
     public void Dispose()
     {
         // Unsubscribe when the component is destroyed to prevent memory leaks

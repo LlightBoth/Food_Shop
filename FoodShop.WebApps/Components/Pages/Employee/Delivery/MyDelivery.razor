@@ -1,0 +1,197 @@
+﻿@page "/delivery_mydelivery"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+
+@using FoodShop.WebApps.Services
+@using Microsoft.EntityFrameworkCore
+@inject FoodShopDbContext db     
+@inject CurrentUser CurrentUser
+@inject NavigationManager navigation
+
+<div class="dashboard-wrapper p-4">
+    <!-- Header Section -->
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h3 class="fw-bold mb-2">Delivery Dispatch</h3>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted small"><i class="fas fa-calendar-alt me-1"></i> @DateTime.Now.ToString("MMMM dd, yyyy")</span>
+                @if (!isLoading)
+                {
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3">
+                        Active: @delivery_count
+                    </span>
+                }
+            </div>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-light border shadow-sm rounded-3" @onclick="RefreshData" disabled="@isLoading">
+                <i class="fas fa-sync-alt me-2 @(isLoading ? "fa-spin" : "") text-primary"></i>Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Table Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 text-uppercase small fw-bold text-muted">Order</th>
+                        <th class="py-3 text-uppercase small fw-bold text-muted">Customer & Address</th>
+                        <th class="py-3 text-uppercase small fw-bold text-muted">Items</th>
+                        <th class="py-3 text-uppercase small fw-bold text-muted">Total Payout</th>
+                        <th class="py-3 text-uppercase small fw-bold text-muted text-center">Status</th>
+                        <th class="pe-4 py-3 text-end text-uppercase small fw-bold text-muted">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (isLoading)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="spinner-border text-primary mb-2" role="status"></div>
+                                <p class="text-muted mb-0">Syncing with server...</p>
+                            </td>
+                        </tr>
+                    }
+                    else if (!invoices.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox fa-2x mb-2 d-block opacity-25"></i>
+                                No active deliveries found.
+                            </td>
+                        </tr>
+                    }                                             
+                    else
+                    {
+                        @foreach (var item in invoices)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="order-icon me-3">
+                                            <i class="fas fa-shopping-bag text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold d-block text-dark">#@item.InvoiceID</span>
+                                            <small class="text-muted">Digital Receipt</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="fw-bold text-dark">@item.Customer?.CustomerName</div>
+                                    <div class="small text-muted text-truncate" style="max-width: 250px;">
+                                        <i class="fas fa-map-marker-alt text-danger me-1 small"></i> @item.Customer?.Address
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-light text-dark border fw-normal">
+                                        @item.InvoiceDetails?.Count() Items
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="fw-bold text-success">$@item.TotalAmount.ToString("F2")</div>
+                                </td>
+
+                                <td class="text-center">
+                                    @if (item.Status == InvoiceStatus.Completed)
+                                    {
+                                        <span class="badge-status success">Delivered</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-status warning">In Transit</span>
+                                    }
+                                </td>
+
+                                <td class="pe-4 text-end">
+                                    <button class="btn btn-sm @(item.Status == InvoiceStatus.Completed ? "btn-outline-secondary" : "btn-primary shadow-sm") px-3 rounded-pill"
+                                            @onclick='() => GoToNextPage(item.InvoiceID)'>
+                                        @(item.Status != InvoiceStatus.Completed ? "Details" : "Complete")
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-soft: #f0f4ff;
+        --success-soft: #e7f9ed;
+        --warning-soft: #fff8eb;
+    }
+
+    .dashboard-wrapper { background-color: #fdfdfd; min-height: 100vh; }
+
+    .order-icon {
+        width: 38px; height: 38px;
+        background-color: var(--primary-soft);
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 10px;
+    }
+
+    .badge-status {
+        padding: 6px 12px; border-radius: 50px;
+        font-size: 0.75rem; font-weight: 700;
+        text-transform: uppercase; display: inline-block;
+    }
+    .badge-status.success { background-color: var(--success-soft); color: #198754; }
+    .badge-status.warning { background-color: var(--warning-soft); color: #f59e0b; }
+
+    .table tbody tr { transition: all 0.2s; border-bottom: 1px solid #f1f1f1; }
+    .table tbody tr:hover { background-color: #fafbfc !important; }
+</style>
+
+@code {
+    private List<Invoices> invoices = new();
+    private int delivery_count = 0;
+    private bool isLoading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await RefreshData();
+        }
+    }
+
+    private async Task RefreshData()
+    {
+        try 
+        {
+            isLoading = true;
+            StateHasChanged(); 
+
+            var user_id = await CurrentUser.GetUserIdAsync();
+
+            if (user_id.HasValue)
+            {
+                invoices = await db.Invoices
+                    .Include(ivd => ivd.InvoiceDetails)
+                    .Include(c => c.Customer)
+                    .Where(d => d.DeliveryID == user_id.Value)
+                    .OrderByDescending(i => i.InvoiceID)
+                    .ToListAsync();
+
+                delivery_count = invoices.Count(x => x.Status != InvoiceStatus.Completed);
+            }
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    private void GoToNextPage(int item_id)
+    {
+        navigation.NavigateTo($"/delivery/{item_id}");
+    }
+}

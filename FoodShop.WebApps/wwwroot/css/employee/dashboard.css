@@ -1,195 +1,37 @@
-﻿/* ===== DARK MODE OVERRIDE ===== */
-.emp-container[data-theme="dark"] .chart,
-.emp-container[data-theme="dark"] .status-wrapper {
-    color: var(--text-dark);
-    background-color: var(--card-dark);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+﻿/* 1. Global Card Overrides */
+.card {
+    background-color: var(--current-card);
+    color: var(--current-text);
+    border-color: var(--current-border);
+    transition: background-color var(--transition-speed), border-color var(--transition-speed);
 }
 
-.emp-container[data-theme="dark"] .status-header,
-.emp-container[data-theme="dark"] .record {
-    color: var(--text-dark);
-    background-color: rgba(0,0,0,0.1);
-    box-shadow: 2px 2px 2px var(--card-dark) inset;
+/* 2. Header Syncing */
+.card-header {
+    background-color: var(--current-card);
+    border-bottom: 1px solid var(--current-border); /* Keep the line visible */
+    color: var(--current-text);
 }
 
-/* ===== DASHBOARD WRAPPER ===== */
-.info-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
+/* 3. Table Modernization */
+/* Bootstrap tables often use --bs-table-bg internally, 
+   so we force the override here */
+.table {
+    --bs-table-bg: var(--current-bg);
+    --bs-table-color: var(--current-text);
+    --bs-table-border-color: var(--current-border);
+    background-color: var(--current-bg);
+    color: var(--current-text);
+    border-radius: var(--border-radius);
+    overflow: hidden; /* Ensures the border-radius cuts the table corners */
 }
 
-/* ===== HEADER CARDS ===== */
-.info-header {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.record {
-    color: snow;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 20px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    min-width: 200px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.record:hover {
-    color: var(--text-light);;
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.record-content {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-.revenue-record {
-    background: linear-gradient(135deg, #28a745, #4cd964); /* green */
-}
-
-.customer-record {
-    background: linear-gradient(135deg, #007bff, #5ac8fa); /* blue */
-}
-
-.orders-record {
-    background: linear-gradient(135deg, #ff9500, #ffcc00); /* orange */
-}
-
-/* Icon Styling */
-.record-content i {
-    font-size: 1.8rem;
-    padding: 12px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
-    color: white;
-}
-
-.revenue-record i { background: linear-gradient(135deg, #10b981, #3b82f6); }
-.customer-record i { background: linear-gradient(135deg, #f59e0b, #ef4444); }
-
-.details .label {
-    display: block;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.7;
-}
-
-.details .value {
-    margin: 0;
-    font-weight: 700;
-    font-size: 1.5rem;
-}
-
-
-/* ===== CHART AREA ===== */
-.info-chart {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 16px;
-}
-
-.chart {
-    background: var(--card-light);
-/*    color: var(--current-color);*/
-    border-radius: 4px;
-    padding: 24px;
-    min-height: 260px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    border: 1px solid var(--card-light);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-/* ===== STATUS LIST ===== */
-.info-status {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* Status table header */
-.status-header {
-    display: grid;
-    grid-template-columns: 80px 1fr 1fr 80px 100px 120px;
-    align-items: center;
-    padding: 8px 12px;
-    border-radius: 4px;
-    background: var(--card-light);
-    border: 1px solid var(--card-dark);
-    font-weight: 600;
-}
-
-/* Row */
-.status-wrapper {
-    display: grid;
-    grid-template-columns: 80px 1fr 1fr 80px 100px 120px;
-    align-items: center;
-    padding: 14px 16px;
-    border-radius: 4px;
-    background: var(--card-light);
-    border: 1px solid rgba(0,0,0,0.1);
-    transition: background 0.2s ease, transform 0.15s ease;
-}
-
-.status-wrapper:hover {
-    background: rgba(0,0,0,0.03);
-    transform: scale(1.01);
-}
-
-/* Cell styles */
-.user-invoice { font-weight: 600; }
-.user-name { font-weight: 500; }
-.user-category { color: #888; }
-.user-price { text-align: start; font-weight: 600; color: #2ecc71; }
-.user-status {
-    text-align: center;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 6px;
-    background-color: var(--primary-color);
-    color: var(--text-dark);
-    width: fit-content;
-    justify-self: start; /* can use end for right alignment */
-}
-
-/* ===== MOBILE RESPONSIVE ===== */
-@media (max-width: 900px) {
-
-    /* Header cards stack */
-    .info-header { grid-template-columns: 1fr; }
-
-    /* Charts stack */
-    .info-chart { grid-template-columns: 1fr; }
-
-    /* Status table stack: 2 columns */
-    .status-header,
-    .status-wrapper {
-        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
-        row-gap: 6px;
-        padding: 8px;
-    }
-
-    /* Hide unnecessary columns */
-/*    .status-header div:nth-child(2),  Name */
-    .status-header div:nth-child(3),  Category 
-    .status-wrapper .user-name,
-    .status-wrapper .user-category {
-        display: none;
-    }
-
-    /* Price left align */
-    .user-price { text-align: left; }
-
-    /* Status badge full width */
-    .user-status { justify-self: center; width: auto; }
+/* 4. The Dark Mode "Inset" Effect */
+/* This makes the card body look slightly 'recessed' 
+   if that's the design you're going for */
+[data-bs-theme="dark"] .card-body {
+    background-color: var(--current-bg);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    /* Adding a tiny bit of padding or a soft inner shadow can help depth */
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
 }

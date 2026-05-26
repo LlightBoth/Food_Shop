@@ -1,0 +1,282 @@
+﻿@page "/profile/{id:int}"
+@layout FoodShop.WebApps.Components.Layout.EmployeeLayout
+@using FoodShop.Data
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager NavManager
+@inject FoodShopDbContext db
+
+<div class="container my-5">
+    @if (employee == null)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading profile...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(statusMessage))
+        {
+            <div class="alert alert-success py-2">@statusMessage</div>
+        }
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger py-2">@errorMessage</div>
+        }
+
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 text-center p-4">
+                    <div class="position-relative d-inline-block mx-auto mb-3">
+                        <div class="rounded-circle img-thumbnail d-flex align-items-center justify-content-center bg-light text-secondary icon-user"
+                             style="width: 120px; height: 120px;">
+                            <i class="bi bi-person-fill" style="font-size: 3.5rem;"></i>
+                        </div>
+                        <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle p-2" title="Online"></span>
+                    </div>
+
+                    <h4 class="mb-1">@employee.EmployeeName</h4>
+                    <p class="text-muted small mb-3">@employee.Email</p>
+
+                    <div class="d-flex justify-content-center gap-2 mb-4">
+                        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">
+                            @(employee.Job?.JobName ?? "Staff Member")
+                        </span>
+                        <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill">
+                            @(employee.Role?.RoleName ?? "Employee")
+                        </span>
+                    </div>
+
+                    <hr class="text-muted">
+
+                    <div class="row text-center my-2">
+                        <div class="col">
+                            <h6 class="mb-0 fw-bold">Invoices</h6>
+                            <small class="text-muted">@employee.Invoices?.Count</small>
+                        </div>
+                        <div class="col border-start">
+                            <h6 class="mb-0 fw-bold">Delivered</h6>
+                            <small class="text-muted">@employee.DeliveredInvoices?.Count</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 p-4">
+
+                    <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(activeTab == "info" ? "active fw-bold" : "")"
+                                    @onclick='() => SwitchTab("info")'
+                                    type="button">
+                                Account Information
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(activeTab == "settings" ? "active fw-bold" : "")"
+                                    @onclick='() => SwitchTab("settings")'
+                                    type="button">
+                                Security Settings
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        @if (activeTab == "info")
+                        {
+                            <EditForm Model="@employee" OnValidSubmit="HandleSave">
+                                <DataAnnotationsValidator />
+
+                                <div class="row g-3">
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-bold">Full Name</label>
+                                        <InputText @bind-Value="employee.EmployeeName" class="form-control" />
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-bold">Phone Number</label>
+                                        <InputText @bind-Value="employee.Phone" class="form-control" />
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-bold">Email Address</label>
+                                        <InputText @bind-Value="employee.Email" class="form-control" disabled />
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-bold">Date of Birth</label>
+                                        <input type="date"
+                                               value="@employee.DateBirth?.ToString("yyyy-MM-dd")"
+                                               @onchange="(e) => UpdateBirthDate(e.Value?.ToString())"
+                                               class="form-control" />
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold">Address</label>
+                                        <InputText @bind-Value="employee.Address" class="form-control" />
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold">Remarks / Notes</label>
+                                        <InputTextArea @bind-Value="employee.Remark" class="form-control" rows="3" placeholder="..." />
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                                </div>
+                            </EditForm>
+                        }
+                        else if (activeTab == "settings")
+                        {
+                            <div>
+                                <h5 class="mb-3 text-danger-emphasis">Update Password</h5>
+                                <div class="row g-3" style="max-width: 400px;">
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold">Current Password</label>
+                                        <input type="password" @bind="currentPassword" class="form-control" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold">New Password</label>
+                                        <input type="password" @bind="newPassword" class="form-control" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold">Confirm New Password</label>
+                                        <input type="password" @bind="confirmPassword" class="form-control" />
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 d-flex justify-content-end">
+                                    <button type="button" @onclick="UpdatePassword" class="btn btn-danger px-4">Update Password</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Employee? employee;
+    private string activeTab = "info";
+    private string newPassword = "";
+    private string currentPassword = "";
+    private string confirmPassword = "";
+    private string? statusMessage;
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadEmployeeDataAsync();
+    }
+
+    private async Task LoadEmployeeDataAsync()
+    {
+        employee = await db.Employees
+            .Include(e => e.Role)
+            .Include(e => e.Job)
+            .Include(e => e.Invoices)
+            .Include(e => e.DeliveredInvoices)
+            .FirstOrDefaultAsync(e => e.EmployeeID == Id);
+
+        ClearFormMessages();
+    }
+
+    private void SwitchTab(string tabName)
+    {
+        activeTab = tabName;
+        ClearFormMessages();
+    }
+
+    private void ClearFormMessages()
+    {
+        newPassword = "";
+        currentPassword = "";
+        confirmPassword = "";
+        statusMessage = null;
+        errorMessage = null;
+    }
+
+    private void UpdateBirthDate(string? dateString)
+    {
+        if (employee != null && DateOnly.TryParse(dateString, out var date))
+        {
+            employee.DateBirth = date;
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        if (employee == null) return;
+
+        try
+        {
+            statusMessage = null;
+            errorMessage = null;
+
+            await db.SaveChangesAsync();
+            statusMessage = "Account information updated successfully!";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving profile modifications: {ex.Message}";
+        }
+    }
+
+    private async Task UpdatePassword()
+    {
+        if (employee == null) return;
+
+        statusMessage = null;
+        errorMessage = null;
+
+        // Validation Rules
+        if (string.IsNullOrWhiteSpace(currentPassword))
+        {
+            errorMessage = "Please enter your current password.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newPassword))
+        {
+            errorMessage = "New password cannot be blank.";
+            return;
+        }
+
+        // FIXED: Clear distinction between wrong password vs non-matching confirmations
+        if (currentPassword != employee.Password)
+        {
+            errorMessage = "The current password you entered is incorrect.";
+            return;
+        }
+
+        if (newPassword != confirmPassword)
+        {
+            errorMessage = "New password configuration fields do not match.";
+            return;
+        }
+
+        try
+        {
+            employee.Password = newPassword;
+            await db.SaveChangesAsync();
+
+            // Clear inputs upon execution success
+            ClearFormMessages();
+            statusMessage = "Password has been successfully modified!";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error changing security settings: {ex.Message}";
+        }
+    }
+}
