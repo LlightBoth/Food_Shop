@@ -153,14 +153,79 @@
     to { transform: scale(1); opacity: 1; }
 }
 
-/* MOBILE RESPONSIVENESS */
+
+/* ==========================================================================
+   Mobile Register Overlay Fixes (Strictly 768px Breakpoint Only)
+   ========================================================================== */
 @media (max-width: 768px) {
-    .register-wrapper { 
-        grid-template-columns: 1fr;
-        max-height: 95vh;
+    .register-overlay {
+        display: flex;
+        align-items: center; /* This explicitly forces vertical centering */
+        justify-content: center; /* This handles horizontal centering */
+        /* Optional but highly recommended for mobile: */
+        padding: 16px; /* Prevents the card from touching the very edges of the screen */
     }
-    .register-img { 
-        height: 180px; /* Fixed height for mobile top-banner style */
-        min-height: 180px;
+    /* 1. Reset grid to a single-column stacked format */
+    .register-wrapper {
+        grid-template-columns: 1fr !important;
+        max-height: 90vh; /* Leaves safe breathing room on short device viewports */
+        width: 100%;
+        max-width: 450px; /* Keeps the card looking crisp and centered on phones */
+        overflow-y: auto;
+        border-radius: 20px; /* Slightly tighter corners for smaller footprints */
     }
+
+    /* 2. Style and reposition the decorative top image block */
+    .register-img {
+        height: 160px;
+        order: -1; /* Explicitly forces the brand image to sit ABOVE the form fields */
+    }
+
+    /* 3. Scale down the massive padding so your content fields fit perfectly */
+    .register-content {
+        padding: 32px 24px !important;
+    }
+
+    /* 4. Shrink spacing between inputs to keep the form from overflowing the screen */
+    .register-content input {
+        padding: 12px 14px !important;
+        margin-bottom: 16px !important;
+        font-size: 0.95rem;
+    }
+
+    /* 5. Make the bottom utility items wrap nicely */
+    .bottom-content {
+        margin-top: 12px !important;
+        gap: 12px !important;
+    }
+
+    .login-content button[type="submit"] {
+        padding: 14px !important;
+    }
+
+    /* 6. Prevent the giant close icon from bleeding into your top form header */
+    .close-btn {
+        top: 12px !important;
+        right: 16px !important;
+        font-size: 2rem !important;
+        color: #ffffff; /* Turns white so it remains perfectly visible against the chicken image */
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Adds a drop shadow so it won't disappear in light zones */
+    }
+
+    /* 7. Center and reposition the error toast for thumb-friendly mobile reading */
+    .status-message {
+        top: auto !important;
+        bottom: 20px !important; /* Moves message to the bottom so it doesn't block form elements */
+        left: 50% !important;
+        transform: translateX(-50%) !important; /* Perfect horizontal screen centering */
+        width: calc(100% - 40px);
+        max-width: 340px;
+        animation: slideUpMobile 0.3s ease-out;
+    }
+}
+
+/* Helper animation for the mobile toast layout reconfiguration */
+@keyframes slideUpMobile {
+    from { transform: translate(-50%, 20px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
 }

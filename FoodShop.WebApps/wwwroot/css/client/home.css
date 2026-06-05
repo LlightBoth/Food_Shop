@@ -434,7 +434,11 @@
     }
 
     .hero-text {
-        margin: auto;
+        margin-top: 220px;
+        margin-right: 60px;
+    }
+    .menu-btn {
+        margin: 0 auto;
     }
 
     .hero-text h1 {

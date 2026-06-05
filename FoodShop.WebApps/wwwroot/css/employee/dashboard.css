@@ -35,3 +35,7 @@
     /* Adding a tiny bit of padding or a soft inner shadow can help depth */
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
 }
+.btn-view {
+    color: var(--current-text);
+    outline: 1px solid var(--current-text);
+}

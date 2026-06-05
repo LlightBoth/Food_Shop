@@ -10,6 +10,7 @@ namespace FoodShop.WebApps.Services
         private readonly FoodShopDbContext _db;
         private readonly UserSession _session;
 
+
         public CheckRoleServices(FoodShopDbContext db, UserSession session)
         {
             _db = db;
@@ -28,13 +29,22 @@ namespace FoodShop.WebApps.Services
 
         public async Task<bool> GetRolePermission(int roleId)
         {
+            // 1. Safety check
             if (_session.UserId == null) return false;
 
+            // 2. Cache Optimization: If permissions are already loaded, don't hit the DB again!
+            if (_session.RolePermissionPage != null && _session.RolePermissionPage.Any())
+            {
+                return true;
+            }
+
+            // 3. Query the database cleanly
             var permissions = await _db.Role_Permissions
-                .Where(rp => rp.RoleID == roleId)
+                .Where(rp => rp.RoleID == roleId && rp.Pages != null)
                 .Select(rp => rp.Pages.PageName)
                 .ToListAsync();
 
+            // 4. Assign to session safely
             _session.RolePermissionPage = permissions;
 
             return permissions.Any();

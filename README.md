@@ -1,4 +1,4 @@
-### FoodShop_Management
+## FoodShop_Management
 
 # FoodShop Project
 Online e-commerce website for food ordering with role-based access control and separate layouts. Built with C# .NET, Blazor, and ORM.
@@ -72,5 +72,9 @@ _Authentication
 ## How To Run It
 - # If you do not have migration file in Foodshop.Data then
 - # When Inside file go to tool -> nu-package cmd
+=======
+# How To Run It
+- If you do not have (Migration file) inside Foodshop.data
+- go to tool -> nu-package cmd -> change directory to (Foodshop.data) instead of (Foodshop.web)
 - Run:  Add-Migration InitialCreate
         Update-Database
