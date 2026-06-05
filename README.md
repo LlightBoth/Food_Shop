@@ -1,6 +1,4 @@
-## FoodShop_Management
-
-# FoodShop Project
+# FoodShop_Management
 Online e-commerce website for food ordering with role-based access control and separate layouts. Built with C# .NET, Blazor, and ORM.
 
 # Features
@@ -69,10 +67,6 @@ _Authentication
 4\. Data layer communicates with the database using ORM 
 5\. Results are returned back to the UI
 
-## How To Run It
-- # If you do not have migration file in Foodshop.Data then
-- # When Inside file go to tool -> nu-package cmd
-=======
 # How To Run It
 - If you do not have (Migration file) inside Foodshop.data
 - go to tool -> nu-package cmd -> change directory to (Foodshop.data) instead of (Foodshop.web)
