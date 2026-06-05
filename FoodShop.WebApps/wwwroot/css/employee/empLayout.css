@@ -31,34 +31,44 @@
     color: var(--current-text);
 }
 
-/* --- Header & Footer --- */
-.emp-header, .emp-footer {
-    background: var(--secondary-color);
-    color: white; /* Contrast against Blue */
-    padding: 16px;
-    font-weight: bold;
-    height: 64px;
-}
-
+/* --- Header Styling --- */
 .emp-header {
     grid-area: Header;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 24px;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
-}
-
-.emp-header a {
-    text-decoration: none;
+    background: var(--secondary-color);
     color: white;
-    padding: 8px 16px;
-    border-radius: var(--border-radius);
-    transition: background var(--transition-speed);
+    height: 64px; /* Hard lock matching your layout template */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Softer, modern shadow */
+    z-index: 1020; /* Ensures dropdown flips over body content */
 }
 
-.emp-header a:hover {
-    background: rgba(255, 255, 255, 0.2);
+/* Profile link overrides */
+.emp-header .profile-link {
+    color: white;
+    padding: 6px 12px;
+    border-radius: var(--border-radius, 6px);
+    transition: background var(--transition-speed, 0.2s) ease;
+}
+
+.emp-header .profile-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Custom fine-tuning for Blazor-toggled Bootstrap dropdowns */
+.emp-header .dropdown-menu {
+    position: absolute;
+    margin-top: 8px; /* Safe gap below the navbar */
+}
+
+.emp-header .dropdown-item {
+    padding: 8px 16px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* Highlight hover changes for list interactions */
+.emp-header .dropdown-item:hover {
+    background-color: #f8f9fa;
 }
 
 /* --- Sidebar (Aside) --- */
@@ -70,32 +80,34 @@
     padding: 10px 0;
 }
 
-.emp-aside .emp-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 8px 16px;
+/* Custom variables matching your design system */
+:root {
+    --primary-orange: #ff6b35;
+    --transition-speed: 0.2s ease-in-out;
 }
 
-.emp-aside .emp-nav a { 
-    padding: 16px 24px;
-    color: var(--current-nav-text);
-    opacity: 0.8;
-    text-decoration: none;
-    border-bottom: 1px solid var(--current-border);
+/* Base link styling overriding Bootstrap defaults */
+.emp-nav .nav-link {
+    padding: 12px 20px;
+    color: #6c757d; /* Muted text */
+    font-weight: 500;
+    border-radius: 6px; /* Modern slightly rounded corners */
+    border-left: 4px solid transparent; /* Prevents layout shifting on active */
     transition: all var(--transition-speed);
 }
 
-.emp-aside .emp-nav a:hover {
-    opacity: 1;
-    color: var(--primary-color);
+/* Hover State */
+.emp-nav .nav-link:hover {
+    color: var(--primary-orange);
+    background-color: #f8f9fa; /* Soft light gray background */
 }
 
-/* Active: Use your Primary Orange as a small accent line */
-.emp-aside .emp-nav a.active {
-    background-color: rgba(255, 107, 53, 0.1); /* 10% Opacity of your Orange */
-    color: var(--primary-color);
-    border-left: 4px solid var(--primary-color);
+/* Active State */
+.emp-nav .nav-link.active {
+    color: var(--primary-orange) !important;
+    background-color: rgba(255, 107, 53, 0.1); /* 10% Opacity Orange */
+    border-left-color: var(--primary-orange);
+    font-weight: 600;
 }
 
 /* --- Main & Content --- */
@@ -121,32 +133,131 @@
     justify-content: center;
 }
 
-/* =========================================
-   MOBILE RESPONSIVENESS
-   ========================================= */
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS (Strictly 768px Breakpoint Only)
+   ========================================================================== */
+/* ==========================================================================
+   BULLETPROOF 768PX MOBILE REDESIGN (Zero Horizontal Bleed)
+   ========================================================================== */
 @media (max-width: 768px) {
+    
+    /* 1. Reset root containers to a strict, single-column viewport lock */
+    html, body {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important; /* Hard lock on screen shaking/sliding */
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 2. Break down the CSS Grid entirely into flat, sequential blocks */
     .emp-container {
-        grid-template-areas:
-            "Header"
-            "Aside"
-            "Main"
-            "Footer";
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto 1fr auto;
+        display: block !important; /* Kills complex grid tracks completely */
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
     }
 
-    .emp-aside .emp-nav {
-        flex-direction: row;
-        flex-wrap: wrap;
+    /* 3. Flush Header to screen edges */
+    .emp-header {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
     }
 
-    .emp-aside .emp-nav a {
-        flex: 1 1 33%;
-        border-bottom: none;
-        border-right: 1px solid var(--current-border);
+    /* 4. Constrain the Aside Navigation bar */
+    .emp-aside {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    /* 5. THE ULTIMATE CONTENT COMPRESSION
+          Forces the content card to swallow any wide columns or rogue inner page elements */
+    .emp-main {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 12px 0 !important; /* Clears destructive side paddings */
+        box-sizing: border-box !important;
+    }
+
+    .emp-content {
+        display: block !important;
+        width: 100% !important; /* Strips out the layout-breaking 94% desktop rule */
+        max-width: 100% !important;
+        padding: 16px 12px !important; /* Keeps inner content readable but tight */
+        border-left: none !important;
+        border-right: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important; /* Traps rogue widths inside the workspace */
+    }
+
+    /* 6. FORCE ALL CHILD PAGES / INLINE ELEMENTS TO OBEY THE SCREEN BOUNDS
+          This aggressively catches any hardcoded inline style widths in your razor sub-pages */
+    .emp-content *, 
+    .emp-content div, 
+    .emp-content section, 
+    .emp-content form, 
+    .emp-content .card {
+        max-width: 100% !important; /* Elements cannot expand past their parent wrapper */
+        box-sizing: border-box !important;
+    }
+
+    /* 7. FORCE BOOTSTRAP GRID ROWS TO STACK INSTANTLY
+          This strips out horizontal negative margins that leak off mobile screens */
+    .emp-content .row {
+        display: flex !important;
+        flex-direction: column !important; /* Converts all horizontal grids to stacked blocks */
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        gap: 16px 0 !important;
+    }
+
+    .emp-content .col, 
+    .emp-content [class^="col-"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        flex: none !important; /* Stops Bootstrap flex-basis from fighting the width */
+    }
+
+    /* 8. MINI-TYPOGRAPHY & INPUT SCALE DOWN
+          Shrinks font structures and input clusters to prevent long strings from breaking lines */
+    .emp-content h1, .emp-content h2, .emp-content h3, .emp-content h4 {
+        word-break: break-word !important; /* Prevents long text titles from pushing screen edges */
+        line-height: 1.2 !important;
+    }
+
+    .emp-content input, 
+    .emp-content select, 
+    .emp-content textarea, 
+    .emp-content .form-control {
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 0.92rem !important;
+        padding: 8px 12px !important;
+    }
+
+    /* 9. SAFE-ZONE DATA TABLES
+          Allows tabular data matrices to scroll smoothly *inside* the layout without expanding it */
+    .emp-content .table-responsive,
+    .emp-content table {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important; /* Isolates the table scrolling to its own boundaries */
+        -webkit-overflow-scrolling: touch;
     }
 }
-
 /* =========================================
    BLAZOR / FORMS OVERRIDES
    ========================================= */

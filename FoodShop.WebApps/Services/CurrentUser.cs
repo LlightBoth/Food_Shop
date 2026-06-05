@@ -19,6 +19,7 @@ namespace FoodShop.WebApps.Services
             _js = js;
         }
 
+        // Load User Data Session
         public async Task LoadUserSession()
         {
             // Return a JSON string to C# object.
@@ -53,6 +54,18 @@ namespace FoodShop.WebApps.Services
 
 
         // Return User From LocalStorage
+        public async Task<UserSession?> GetSessionAsync()
+        {
+            var json = await _js.InvokeAsync<string>(
+                "localStorage.getItem",
+                LocalStorageKey);
+
+            if (string.IsNullOrWhiteSpace(json))
+                return null;
+
+            return JsonSerializer.Deserialize<UserSession>(json);
+        }
+
         public async Task<int?> GetUserIdAsync()
         {
             var json = await _js.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);

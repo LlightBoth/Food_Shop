@@ -10,7 +10,7 @@ namespace FoodShop.WebApps.Middleware
         [Inject] protected UserSession UserSession { get; set; }
         [Inject] protected CurrentUser CurrentUser { get; set; }
         [Inject] protected NavigationManager NavManager { get; set; }
-        [Inject] protected CheckRoleServices CheckRole { get; set; }
+        [Inject] protected CheckRoleServices CheckRole { get; set; } = default;
 
         protected bool IsAuthorize = false;
 
@@ -57,23 +57,42 @@ namespace FoodShop.WebApps.Middleware
 
             foreach (var role in UserSession.RolePermissionPage) { Console.Write($"{role.ToString()}, "); }
 
-            // Check Current URI, If Allowed In Or Not
+            // 4. Clean and Match Current URI safely
             var currentPage = NavManager.ToBaseRelativePath(NavManager.Uri)
-                                        .Split('/', StringSplitOptions.RemoveEmptyEntries)
-                                        .FirstOrDefault()?.ToLower() ?? "";
+                .Split('?', StringSplitOptions.RemoveEmptyEntries)[0]
+                .Trim('/')
+                .ToLower();
 
-            if (UserSession.RolePermissionPage == null ||!UserSession.RolePermissionPage.Any(p => p.ToLower() == currentPage))
+            // If currentPage is empty, it means they are on the Root/Home page "/"
+            if (string.IsNullOrEmpty(currentPage))
+            {
+                currentPage = "dashboard"; // Or whatever your default home/dashboard path string is
+            }
+
+            // Check if the current page exists in the allowed list
+            bool canAccess = UserSession.RolePermissionPage != null && UserSession.RolePermissionPage.Any(allowedPage =>
+            {
+                var cleanAllowed = allowedPage.Trim('/').ToLower();
+
+                // Exact match (e.g., "food" == "food")
+                if (cleanAllowed == currentPage) return true;
+
+                // Route Parameter match (e.g., "food/details/12" starts with "food/details/")
+                if (currentPage.StartsWith(cleanAllowed + "/")) return true;
+
+                return false;
+            });
+
+            if (!canAccess)
             {
                 NavManager.NavigateTo("/access-denied");
                 return;
             }
 
-            // Saved previous page
+            // If all checks pass, allow rendering
             UserSession.PreviousURI = currentPage;
-
-            Console.WriteLine($"{NavManager.Uri}");
-
             IsAuthorize = true;
+            Console.WriteLine($"{NavManager.Uri}");
 
             StateHasChanged(); // important for render refresh ui
         }

@@ -4,7 +4,7 @@
 
 @inject IJSRuntime JS
 @inject CurrentUser CurrentUser
-@inject UserSession  UserSession
+@inject UserSession UserSession
 @inject NavigationManager NavManager
 
 <link href="/css/employee/empLayout.css" rel="stylesheet" />
@@ -13,27 +13,29 @@
 
 <div class="emp-container" data-theme="@mode">
 
-    <header class="emp-header d-flex align-items-center justify-content-between p-3">
-        <a href="/profile/@userId" class="text-decoration-none">@username</a>
-        <!-- Bootstrap Dropdown Container -->
+    <header class="emp-header px-4 d-flex align-items-center justify-content-between">
+        <a href="/profile/@userId" class="profile-link d-flex align-items-center gap-2 fw-semibold">
+            <i class="bi bi-person-circle fs-5"></i>
+            <span>@username</span>
+        </a>
+
         <div class="dropdown">
-            <!-- Toggle Button -->
-            <button class="dropdown-toggle"
+            <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2"
                     type="button"
                     @onclick="ToggleDropdown">
-               Setting ⚙️
+                <i class="bi bi-gear-fill"></i> Settings
             </button>
 
-            <!-- Dropdown Menu (Bootstrap classes handle the styling, Blazor handles the visibility) -->
-            <ul class="dropdown-menu dropdown-menu-end @(isDropdownOpen ? "show" : "")">
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm @(isDropdownOpen ? "show" : "")">
                 <li>
-                    <button class="dropdown-item" type="button" @onclick="MyProfile">
-                        Profile
+                    <button class="dropdown-item d-flex align-items-center gap-2" type="button" @onclick="MyProfile">
+                        <i class="bi bi-person fs-6 text-muted"></i> Profile
                     </button>
                 </li>
+                <li><hr class="dropdown-divider"></li>
                 <li>
-                    <button class="dropdown-item" type="button" @onclick="IsLogout">
-                        Log-out
+                    <button class="dropdown-item d-flex align-items-center gap-2 text-danger" type="button" @onclick="IsLogout">
+                        <i class="bi bi-box-arrow-right fs-6"></i> Log-out
                     </button>
                 </li>
             </ul>
@@ -41,23 +43,46 @@
     </header>
 
     <aside class="emp-aside">
-        <nav class="emp-nav">
-            <a href="/dashboard">Dashboard</a>
-            <a href="/delivery_dashboard">Delivery</a>
-            <a href="/category">Category</a>
-            <a href="/food">Food</a>
-            <a href="/invoice">Invoice</a>
-            <a href="/customer">Customer</a>
-            <a href="/employee">Employee</a>
-            <a href="/job">Job</a>
-            <a href="/role">Role</a>
-            <a href="/page">Page</a>
-            <a href="/">Food-Shop</a>
-            @* @foreach (var page in UserSession.RolePermissionPage)
-            {
-                <a href="@($"{@page}")">"@($"{@page}")"</a>
-            } *@
-        </nav>
+        <div class="w-100 overflow-auto">
+            <nav class="nav flex-row flex-md-column emp-nav gap-1 p-2 text-nowrap flex-nowrap">
+                <a class="nav-link active d-flex align-items-center" href="/dashboard">
+                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                </a>
+                <a class="nav-link d-flex align-items-center" href="/delivery">
+                    <i class="bi bi-truck me-2"></i> Delivery
+                </a>
+                <a class="nav-link d-flex align-items-center" href="/category">
+                    <i class="bi bi-tags me-2"></i> Category
+                </a>
+                <a class="nav-link d-flex align-items-center" href="/food">
+                    <i class="bi bi-egg-fried me-2"></i> Food
+                </a>
+                <a class="nav-link d-flex align-items-center" href="/invoice">
+                    <i class="bi bi-receipt me-2"></i> Invoice
+                </a>
+                <a class="nav-link d-flex align-items-center" href="/customer">
+                    <i class="bi bi-people me-2"></i> Customer
+                </a>
+                <a class="nav-link d-flex align-items-center" href="/employee">
+                    <i class="bi bi-person-badge me-2"></i> Employee
+                </a>
+                <a class="nav-link d-flex align-items-center" href="/job">
+                    <i class="bi bi-briefcase me-2"></i> Job
+                </a>
+                <a class="nav-link d-flex align-items-center" href="/role">
+                    <i class="bi bi-shield-lock me-2"></i> Role
+                </a>
+                <a class="nav-link d-flex align-items-center" href="/page">
+                    <i class="bi bi-file-earmark me-2"></i> Page
+                </a>
+
+                <hr class="text-secondary my-2 d-none d-md-block">
+
+                <a class="nav-link d-flex align-items-center text-success" href="/">
+                    <i class="bi bi-shop me-2"></i> Food-Shop
+                </a>
+            </nav>
+        </div>
     </aside>
 
     <section class="emp-main">
@@ -91,6 +116,9 @@
     {
         if (!firstRender) return;
 
+        mode = await JS.InvokeAsync<string>("loadTheme");
+
+
         var session = await CurrentUser.GetUserUsernameAsync();
         var sessionId = await CurrentUser.GetUserIdAsync();
 
@@ -98,6 +126,8 @@
         {
             username = session;
             userId = (int)sessionId;
+
+
             StateHasChanged();
         }
     }
@@ -115,12 +145,12 @@
 
     private async Task MyProfile()
     {
-        isDropdownOpen = false; // Close menu after click
+        isDropdownOpen = false;
         NavManager.NavigateTo($"/profile/{userId}");
     }
     private async Task IsLogout()
     {
-        isDropdownOpen = false; // Close menu after click
+        isDropdownOpen = false;
         await CurrentUser.ClearUserSession();
         NavManager.NavigateTo("/login");
     }

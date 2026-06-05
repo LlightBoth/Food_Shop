@@ -69,26 +69,107 @@ body {
     grid-template-rows: auto 1fr auto; /* header, content, footer */
     min-height: 100vh; /* full viewport height */
 }
-/* Update your nav links */
-.app-header nav {
-    display: flex;
-    align-items: center; /* Ensures items are centered vertically */
-    gap: 20px; /* Increased gap for better spacing */
-    width: 100%;
+/* --- Global App Header Container --- */
+.app-header {
+    background-color: var(--primary-color, #ff6b35); /* Defaults to your Brand Orange */
+    backdrop-filter: blur(10px);
+    z-index: 1030;
+    transition: background-color var(--transition-speed, 0.3s) ease;
 }
-
-.app-header nav a { 
-    color: var(--text-dark); /* Fixed variable */
-    text-decoration: none; 
-    padding: 8px 12px;
-    font-size: 1.1rem; /* Makes text slightly larger and more readable */
+.brand-logo { color: #fff;}
+/* Brand Link Styling */
+/*.brand-logo {*/
+/* Background */
+/*background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('/image/foodie_logo-removebg-preview.png') center/cover no-repeat;
+    width: 80px;
+    height: 80px;
+}*/
+/* Central Nav Links */
+.app-header .nav-item-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+    text-decoration: none;
+    padding: 8px 16px;
+    font-size: 1rem;
     font-weight: 500;
-    transition: all var(--transition-speed) ease;
+    border-radius: 20px;
+    transition: all 0.25s ease;
 }
 
-.app-header nav a:hover {
-    color: var(--secondary-color);
-    transform: translateY(-2px); /* Adds a premium feel on hover */
+.app-header .nav-item-link:hover, 
+.app-header .nav-item-link.active {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+/* Premium Shopping Cart Element */
+.app-header .cart-link {
+    color: #ffffff !important;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-header .cart-link:hover {
+    transform: scale(1.08);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.app-header .cart-badge {
+    border: 2px solid var(--primary-color, #ff6b35) !important;
+    font-size: 0.7rem;
+    padding: 0.35em 0.5em;
+    transform: translate(25%, -25%) !important;
+}
+
+/* User Profile Account Dropdown Trigger */
+.app-header .btn-user-dropdown {
+    background-color: #ffffff;
+    color: var(--text-dark, #212529);
+    border: 1px solid transparent;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border-radius: 30px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    transition: all 0.2s ease;
+}
+
+.app-header .btn-user-dropdown:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Dropdown Menu Item Precision styling */
+.app-header .dropdown-menu {
+    border-radius: 12px !important;
+    min-width: 200px;
+}
+
+.app-header .dropdown-item {
+    padding: 10px 20px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: background-color 0.15s ease;
+}
+
+/* Login Action Button */
+.app-header .btn-login {
+    background-color: #ffffff;
+    color: var(--primary-color, #ff6b35);
+    border: 1px solid #ffffff;
+    transition: all 0.2s ease;
+}
+
+.app-header .btn-login:hover {
+    background-color: transparent;
+    color: #ffffff;
 }
 
 
@@ -206,7 +287,54 @@ body {
     color: #bbb;
 }
 
+ 
+    /* ==========================================================================
+   Mobile Responsive Styles (768px Breakpoint)
+   ========================================================================== */
+
 @media (max-width: 768px) {
+    /* 1. Prevent nav items from overflowing by squeezing horizontal gaps */
+    .app-header nav {
+        gap: 8px !important;
+    }
+
+    /* 2. Hide the main nav links container on phones entirely */
+    .app-header .main-nav-links {
+        display: none !important;
+    }
+
+    /* 3. Scale down the brand typography slightly */
+    .app-header .brand-logo {
+        font-size: 1.25rem !important;
+    }
+
+    /* 4. Shrink the interactive cart icon area for tight layouts */
+    .app-header .cart-link {
+        width: 36px;
+        height: 36px;
+        margin-left: 4px !important;
+        margin-right: 4px !important;
+    }
+    
+    .app-header .cart-link i {
+        font-size: 1.25rem !important;
+    }
+
+    /* 5. Keep the dropdown box safely locked inside smartphone viewports */
+    .app-header .dropdown-menu {
+        position: absolute;
+        right: 0;
+        left: auto;
+        min-width: 180px;
+        margin-top: 10px !important;
+    }
+
+    /* 6. Make user/login action buttons compact for fat-finger safety */
+    .app-header .btn-user-dropdown,
+    .app-header .btn-login {
+        padding: 6px 12px !important;
+        font-size: 0.85rem !important;
+    }
     .theme-selector {
         left: 16px;
         bottom: 16px;
@@ -222,7 +350,26 @@ body {
         font-size: 1rem;
         margin: 0;
     }
+    /* --- TABLE AUTOMATION --- */
+    
+    /* Force any standard table to become a self-contained scrollable block */
+    table {
+        display: block;
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid #e9ecef;
+    }
+
+    /* Keep table cells from wrapping content into ugly vertical sentences */
+    table th, 
+    table td {
+        padding: 10px 12px !important;
+        font-size: 0.9rem !important;
+        white-space: nowrap !important;
+    }
 }
+
 
 
 h1:focus {

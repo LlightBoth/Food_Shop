@@ -136,7 +136,7 @@
 
             if (result == null || result.DeliveryID != UserSession.UserId)
             {
-                navigation.NavigateTo("/delivery_mydelivery");
+                navigation.NavigateTo("/delivery/mydelivery");
                 return;
             }
 
@@ -145,7 +145,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading invoice: {ex.Message}");
-            navigation.NavigateTo("/delivery_mydelivery");
+            navigation.NavigateTo("/delivery/mydelivery");
         }
         finally
         {
@@ -168,7 +168,7 @@
             {
                 dbInvoice.Status = InvoiceStatus.Completed;
                 await db.SaveChangesAsync();
-                navigation.NavigateTo("/delivery_mydelivery");
+                navigation.NavigateTo("/delivery/mydelivery");
             }
         }
         catch (Exception ex)
